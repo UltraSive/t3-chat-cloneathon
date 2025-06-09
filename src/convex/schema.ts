@@ -3,19 +3,20 @@ import { v } from "convex/values";
 
 export default defineSchema({
   threads: defineTable({
-    createdAt: v.int64(),
-    updatedAt: v.int64(),
-    lastMessageAt: v.int64(),
+    description: v.string(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    lastMessageAt: v.string(),
     status: v.union(
       v.literal("finished"),
       v.literal("processing"),
     ),
     parentThread: v.optional(v.id("threads")),
-    user: v.id("users"),
-  }),
+    user: v.optional(v.id("users")),
+  }).index("by_lastMessageAt", ["lastMessageAt"]),
   messages: defineTable({
     content: v.string(),
-    createdAt: v.int64(),
+    createdAt: v.string(),
     role: v.union(
       v.literal("user"), 
       v.literal("assistant"), // assistant messages are used to provide responses in the conversation from models
@@ -25,16 +26,7 @@ export default defineSchema({
       v.literal("finished"),
       v.literal("processing"),
     ),
-    user: v.id("users"),
-  }),
-  users: defineTable({
-    name: v.string(),
-    tokenIdentifier: v.string(),
-  }).index("by_token", ["tokenIdentifier"]),
-  sessions: defineTable({
-    token: v.string(),
-    user: v.id("users"),
-    createdAt: v.int64(),
-    expiresAt: v.int64(),
-  }).index("by_token", ["token"]),
+    user: v.optional(v.string()),
+    thread: v.id("threads"),
+  }).index("by_thread", ["thread", "createdAt"]),
 });
