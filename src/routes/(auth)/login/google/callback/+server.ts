@@ -44,7 +44,7 @@ export const GET: RequestHandler = async (event) => {
 		return new Response(null, {
 			status: 302,
 			headers: {
-				Location: "/projects"
+				Location: "/"
 			}
 		});
 	}
