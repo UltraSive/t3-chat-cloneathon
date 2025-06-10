@@ -63,5 +63,7 @@
 			{/each}
 		</div>
 	</ScrollArea>
-	<MessageInput />
+	<div class="bg-background/70 sticky bottom-2 mx-4 backdrop-blur-md">
+		<MessageInput />
+	</div>
 </div>
