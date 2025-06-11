@@ -12,7 +12,7 @@ import { OPENROUTER_API_KEY } from '$env/static/private';
 
 // Define a Zod schema for action
 const chatSchema = z.object({
-  thread: z.string(),
+  thread: z.optional(z.string()),
   model: z.string(),
   message: z.string()
 });

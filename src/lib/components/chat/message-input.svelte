@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { preventDefault } from '$lib/modifiers';
 
-	import { useQuery } from 'convex-svelte';
+	let { thread = 'j977d8pr25mcq74g49t5egatmh7hkn2m', model = 'openai/gpt-4o-mini' } = $props();
 
 	import { Button } from '$lib/components/ui/button';
 	import { Textarea } from '$lib/components/ui/textarea';
@@ -9,15 +9,31 @@
 	import { Send, Paperclip } from 'lucide-svelte';
 
 	let isLoading = $state(false);
-	let message = $state('');
 
-	async function changeName(event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }) {
+	async function submitPrompt(
+		event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }
+	) {
 		const data = new FormData(event.currentTarget);
 		const message = data.get('message');
 
-		const query = useQuery(api.threads.getThreadWithMessages, {
-			threadId
+		const response = await fetch('http://localhost:5173/prompt', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			credentials: 'include',
+			body: JSON.stringify({
+				thread,
+				model,
+				message
+			})
 		});
+
+		const res = await response.json();
+
+		if (!response.ok) {
+			
+		}
 	}
 </script>
 
@@ -28,7 +44,6 @@
 			name="message"
 			placeholder="Message assistant..."
 			class="max-h-48 min-h-24 resize-none pr-12 pb-12"
-			bind:value={message}
 			disabled={isLoading}
 		/>
 		<!--<Button
