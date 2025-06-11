@@ -55,8 +55,10 @@
 		"convex": "^1.24.8",
 		"convex-svelte": "^0.0.11",
 		"drizzle-orm": "^0.44.2",
+		"jose": "^6.0.11",
 		"lucide-svelte": "^0.514.0",
 		"marked": "^15.0.12",
-		"postgres": "^3.4.7"
+		"postgres": "^3.4.7",
+		"zod": "^3.25.58"
 	}
 }

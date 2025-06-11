@@ -12,7 +12,7 @@ export default defineSchema({
       v.literal("processing"),
     ),
     parentThread: v.optional(v.id("threads")),
-    user: v.optional(v.id("users")),
+    user: v.string(),
   }).index("by_lastMessageAt", ["lastMessageAt"]),
   messages: defineTable({
     content: v.string(),
@@ -26,7 +26,7 @@ export default defineSchema({
       v.literal("finished"),
       v.literal("processing"),
     ),
-    user: v.optional(v.string()),
+    user: v.string(),
     thread: v.id("threads"),
   }).index("by_thread", ["thread", "createdAt"]),
 });
