@@ -19,15 +19,19 @@
 
 <Sidebar.Provider bind:open={sidebarOpen}>
 	<AppSidebar />
-	{#if !sidebarOpen}
-		<div class="absolute top-1 left-1 z-50" in:fade={{ delay: 250 }} out:fade={{ duration: 50 }}>
-			<div class="bg-muted/50 rounded p-1">
-				<Sidebar.Trigger />
-				<Button size="icon" variant="ghost" class="size-7" href="/"><SquarePen /></Button>
-			</div>
-		</div>
-	{/if}
 	<main class="w-full">
+		{#if !sidebarOpen}
+				<div
+					class="sticky top-1 left-1 z-50 w-fit"
+					in:fade={{ delay: 250 }}
+					out:fade={{ duration: 50 }}
+				>
+					<div class="bg-muted/50 flex items-center space-x-1 rounded p-1">
+						<Sidebar.Trigger />
+						<Button size="icon" variant="ghost" class="size-7" href="/"><SquarePen /></Button>
+					</div>
+				</div>
+		{/if}
 		{@render children?.()}
 	</main>
 </Sidebar.Provider>
