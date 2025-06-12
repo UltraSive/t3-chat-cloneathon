@@ -13,12 +13,13 @@ export default defineSchema({
     ),
     parentThread: v.optional(v.id("threads")),
     user: v.string(),
-  }).index("by_lastMessageAt", ["lastMessageAt"]),
+  }).index("by_lastMessageAt", ["lastMessageAt"])
+  .index("by_user_lastMessageAt", ["user", "lastMessageAt"]),
   messages: defineTable({
     content: v.string(),
     createdAt: v.string(),
     role: v.union(
-      v.literal("user"), 
+      v.literal("user"),
       v.literal("assistant"), // assistant messages are used to provide responses in the conversation from models
       v.literal("system"), // system messages are used to set context for the conversation
     ),

@@ -3,7 +3,6 @@
 
 	import { useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api.js';
-	import type { Id } from '$convex/_generated/dataModel';
 
 	import Content from '$lib/components/chat/content.svelte';
 	import MessageInput from '$lib/components/chat/message-input.svelte';
@@ -16,12 +15,10 @@
 	let { data }: PageProps = $props();
 	const { user } = data;
 
-	const threadId = page.params.thread as Id<'threads'>;
-
-	const query = useQuery(api.threads.getThreadWithMessages, {
-		threadId,
-		userId: user.id
-	});
+	const query = $derived(useQuery(api.threads.getThreadWithMessages, {
+		thread: page.params.thread,
+		user: user.id
+	}));
 
 	let processing = $derived.by(() => {
 		console.log("processing");

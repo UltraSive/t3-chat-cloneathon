@@ -10,7 +10,7 @@
 
 <div class="flex h-full flex-1 flex-col">
 	<div class="flex h-full flex-col items-center justify-center gap-4">
-		<p class="text-2xl font-bold md:text-4xl">How can I help you?</p>
+		<p class="text-2xl font-bold md:text-4xl">How can I assist you?</p>
 		{#if !user}
 			<p class="text-muted-foreground text-lg font-semibold">
 				Create an free account to get higher limits

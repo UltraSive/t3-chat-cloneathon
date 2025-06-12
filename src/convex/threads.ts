@@ -32,18 +32,19 @@ export const getPaginatedThreadsWithOldestMessage = query({
   args: {
     offset: v.number(),
     count: v.number(),
+    user: v.string(),
   },
-  handler: async (ctx, { offset, count }) => {
-    // Step 1: Get latest threads with offset + limit
-    const allThreads = await ctx.db
+  handler: async (ctx, { offset, count, user }) => {
+    // Step 1: Get threads for this user
+    const userThreads = await ctx.db
       .query("threads")
-      .withIndex("by_lastMessageAt")
+      .withIndex("by_user_lastMessageAt", (q) => q.eq("user", user))
       .order("desc")
       .collect();
 
-    const paginatedThreads = allThreads.slice(offset, offset + count);
+    const paginatedThreads = userThreads.slice(offset, offset + count);
 
-    // Step 2: For each thread, fetch the oldest message
+    // Step 2: Get the oldest message in each thread
     const results = await Promise.all(
       paginatedThreads.map(async (thread) => {
         const oldestMessage = await ctx.db
@@ -81,18 +82,20 @@ export const getThread = query({
 
 export const getThreadWithMessages = query({
   args: {
-    threadId: v.id("threads"),
-    userId: v.string()
+    thread: v.string(),
+    user: v.string()
   },
-  handler: async (ctx, { threadId, userId }) => {
+  handler: async (ctx, { thread, user }) => {
+    const threadId = thread as Id<'threads'>;
+
     // Step 1: Get the thread
-    const thread = await ctx.db.get(threadId);
-    if (!thread) {
+    const result = await ctx.db.get(threadId);
+    if (!result) {
       throw new Error("Thread not found");
     }
 
     // Step 2: Check if thread belongs to the user
-    if (thread.user !== userId) {
+    if (result.user !== user) {
       throw new Error("Unauthorized access to thread");
     }
 
@@ -103,6 +106,6 @@ export const getThreadWithMessages = query({
       .order("asc") // Order by createdAt ascending
       .collect();
 
-    return { thread, messages };
+    return { thread: result, messages };
   },
 });

@@ -1,8 +1,13 @@
 <script lang="ts">
 	import * as Sidebar from '$lib/components/ui/sidebar';
+
   import NavMain from './nav-main.svelte';
+	import SearchForm from "./search-form.svelte";
+	import NavThreads from './nav-threads.svelte';
 
   import { SquarePen } from "lucide-svelte"
+
+	let { user } = $props();
 
 	const data = {
 		navMain: [
@@ -19,10 +24,10 @@
 	<Sidebar.Header>
     <Sidebar.Trigger />
     <NavMain items={data.navMain} />
+		<SearchForm />
   </Sidebar.Header>
 	<Sidebar.Content>
-		<Sidebar.Group />
-		<Sidebar.Group />
+		<NavThreads {user} />
 	</Sidebar.Content>
 	<Sidebar.Footer />
 </Sidebar.Root>
