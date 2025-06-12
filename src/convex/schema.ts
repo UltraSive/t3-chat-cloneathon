@@ -3,7 +3,7 @@ import { v } from "convex/values";
 
 export default defineSchema({
   threads: defineTable({
-    description: v.string(),
+    description: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
     lastMessageAt: v.string(),

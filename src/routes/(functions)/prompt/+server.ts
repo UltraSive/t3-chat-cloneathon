@@ -36,20 +36,36 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   const data = validatedBody.data;
   const { thread, model, message } = data;
 
-  const [threadErr, threadQuery] = await catchError(convexClient.query(api.threads.getThread, {
-    thread,
-  }));
+  let referencedThread;
 
-  if (threadErr) {
-    return json({ success: false, message: "Thread not found." }, { status: 400 });
-  }
+  if (thread) {
+    const [threadErr, threadQuery] = await catchError(convexClient.query(api.threads.getThread, {
+      thread,
+    }));
 
-  if (threadQuery.user !== user.id) {
-    return json({ success: false, message: "User does not have access to thread." }, { status: 400 });
+    if (threadErr) {
+      return json({ success: false, message: "Thread not found." }, { status: 400 });
+    }
+
+    if (threadQuery.user !== user.id) {
+      return json({ success: false, message: "User does not have access to thread." }, { status: 400 });
+    }
+
+    referencedThread = threadQuery._id;
+  } else {
+    const [threadErr, threadMutation] = await catchError(convexClient.mutation(api.threads.createThread, {
+      user: user.id,
+    }));
+
+    if (threadErr) {
+      return json({ success: false, message: "Error creating thread" }, { status: 400 });
+    }
+
+    referencedThread = threadMutation;
   }
 
   const [userErr, userMutation] = await catchError(convexClient.mutation(api.messages.createMessage, {
-    threadId: threadQuery._id,
+    threadId: referencedThread,
     role: "user",
     content: message,
     status: "finished",
@@ -57,7 +73,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   }));
 
   const [assistantErr, assistantMutation] = await catchError(convexClient.mutation(api.messages.createMessage, {
-    threadId: threadQuery._id,
+    threadId: referencedThread,
     role: "assistant",
     content: "",
     status: "processing",
@@ -166,5 +182,5 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     status: "finished"
   })
 
-  return json({ success: true }, { status: 200 });
+  return json({ success: true, thread: referencedThread }, { status: 200 });
 };

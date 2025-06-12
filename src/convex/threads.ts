@@ -1,7 +1,32 @@
-import { query, internalQuery, action } from "./_generated/server";
+import { query, internalQuery, mutation, action } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { api } from './_generated/api'; 
+
+export const createThread = mutation({
+  args: {
+    description: v.optional(v.string()),
+    user: v.string(),
+    parentThread: v.optional(v.string()),
+  },
+  handler: async (ctx, { description, user, parentThread }) => {
+    const parentThreadId = parentThread as Id<'threads'>;
+
+    const now = new Date().toISOString();
+
+    const threadId = await ctx.db.insert("threads", {
+      description,
+      user,
+      parentThread: parentThreadId,
+      createdAt: now,
+      updatedAt: now,
+      lastMessageAt: now,
+      status: "processing",
+    });
+
+    return threadId;
+  },
+});
 
 export const getPaginatedThreadsWithOldestMessage = query({
   args: {

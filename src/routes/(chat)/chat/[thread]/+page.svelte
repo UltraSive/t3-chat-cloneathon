@@ -12,11 +12,11 @@
 
 	import { User, Bot } from 'lucide-svelte';
 
-	import type { PageProps } from './$types';
+	import type { PageProps } from '../[id]/$types';
 	let { data }: PageProps = $props();
 	const { user } = data;
 
-	const threadId = page.params.id as Id<'threads'>;
+	const threadId = page.params.thread as Id<'threads'>;
 
 	const query = useQuery(api.threads.getThreadWithMessages, {
 		threadId,
