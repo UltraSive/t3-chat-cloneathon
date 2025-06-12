@@ -1,11 +1,12 @@
 <script lang="ts">
 	import * as Sidebar from '$lib/components/ui/sidebar';
 
-  import NavMain from './nav-main.svelte';
-	import SearchForm from "./search-form.svelte";
+	import NavMain from './nav-main.svelte';
+	import SearchForm from './search-form.svelte';
 	import NavThreads from './nav-threads.svelte';
+	import NavUser from './nav-user.svelte';
 
-  import { SquarePen } from "lucide-svelte"
+	import { SquarePen } from 'lucide-svelte';
 
 	let { user } = $props();
 
@@ -15,19 +16,21 @@
 				title: 'New Thread',
 				url: '/',
 				icon: SquarePen
-			},
+			}
 		]
 	};
 </script>
 
 <Sidebar.Root>
 	<Sidebar.Header>
-    <Sidebar.Trigger />
-    <NavMain items={data.navMain} />
+		<Sidebar.Trigger />
+		<NavMain items={data.navMain} />
 		<SearchForm />
-  </Sidebar.Header>
+	</Sidebar.Header>
 	<Sidebar.Content>
 		<NavThreads {user} />
 	</Sidebar.Content>
-	<Sidebar.Footer />
+	<Sidebar.Footer>
+		<NavUser {user} />
+	</Sidebar.Footer>
 </Sidebar.Root>

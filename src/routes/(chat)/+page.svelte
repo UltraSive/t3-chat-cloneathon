@@ -1,5 +1,5 @@
 <script lang="ts">
-	import MessageInput from '$lib/components/chat/message-input.svelte';
+	import MessageInput from '$lib/components/chat/MessageInput.svelte';
 
 	import { Button } from '$lib/components/ui/button';
 

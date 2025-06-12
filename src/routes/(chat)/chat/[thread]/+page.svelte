@@ -4,8 +4,8 @@
 	import { useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api.js';
 
-	import Content from '$lib/components/chat/content.svelte';
-	import MessageInput from '$lib/components/chat/message-input.svelte';
+	import Content from '$lib/components/chat/Content.svelte';
+	import MessageInput from '$lib/components/chat/MessageInput.svelte';
 
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 
@@ -21,9 +21,10 @@
 	}));
 
 	let processing = $derived.by(() => {
-		console.log("processing");
 		return query.data?.messages?.some((m) => m.status === 'processing') ?? false;
 	});
+
+	//let messages = $derived(query?.data?.messages);
 </script>
 
 <div class="flex h-full flex-1 flex-col">

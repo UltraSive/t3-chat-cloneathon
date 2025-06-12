@@ -40,32 +40,37 @@ async function processRelay(model: string, messages: Message[], responseId: stri
   });
 
   if (!response.body) {
-    return json({ success: false, message: 'No response body.' }, { status: 500 });
+    console.error("No openrelay response body")
   }
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
+  let content = '';
 
-  let content = ''; // 👈 initialize accumulator
-
-  let updateTimer: NodeJS.Timeout | null = null;
-  function scheduleUpdate() {
-    if (updateTimer) return;
-    updateTimer = setTimeout(async () => {
-      updateTimer = null;
-      try {
-        await convexClient.mutation(api.messages.updateMessage, {
-          message: responseId,
-          content,
-          status: "processing"
-        });
-      } catch (err) {
-        console.error("Convex update error:", err);
-      }
-    }, 250);
+  // Debounce utility
+  function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
+    let timer: NodeJS.Timeout;
+    return (...args: Parameters<T>) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), delay);
+    };
   }
 
+  // Debounced updateMessage
+  const updateMessage = debounce(async () => {
+    try {
+      await convexClient.mutation(api.messages.updateMessage, {
+        message: responseId,
+        content,
+        status: "processing"
+      });
+    } catch (err) {
+      console.error("Convex update error:", err);
+    }
+  }, 250);
+
+  // Stream and process chunks
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -86,28 +91,25 @@ async function processRelay(model: string, messages: Message[], responseId: stri
           const delta = message.choices?.[0]?.delta?.content;
 
           if (delta) {
-            content += delta; // 👈 append to full content
-            scheduleUpdate();
+            content += delta;
+            updateMessage(); // 👈 this is debounced
           }
-
-          await convexClient.mutation(api.messages.updateMessage, {
-            message: responseId,
-            content,
-            status: "processing"
-          })
         } catch (e) {
           console.error('Parse error:', e);
         }
       }
     }
   }
-  // Make sure the live updates is done before finishing the message.
-  await new Promise(resolve => setTimeout(resolve, 250));
+
+  // Wait a bit to flush final debounce
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  // Final status update
   await convexClient.mutation(api.messages.updateMessage, {
     message: responseId,
     content,
     status: "finished"
-  })
+  });
 }
 
 // Define a Zod schema for action
@@ -128,9 +130,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   const validatedBody = chatSchema.safeParse(body);
 
   if (!validatedBody.success) {
-    return new Response(JSON.stringify({ error: validatedBody.error.format() }), {
-      status: 400,
-    });
+    return json({ success: false, message: validatedBody.error.flatten() }, { status: 400 });
   }
 
   const data = validatedBody.data;
