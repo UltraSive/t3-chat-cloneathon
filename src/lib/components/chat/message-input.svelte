@@ -1,18 +1,24 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+
 	import { preventDefault } from '$lib/modifiers';
 
-	let { thread = 'j977d8pr25mcq74g49t5egatmh7hkn2m', model = 'openai/gpt-4o-mini' } = $props();
+	let { thread, model = 'openai/gpt-4o-mini', processing = $bindable() } = $props();
 
 	import { Button } from '$lib/components/ui/button';
 	import { Textarea } from '$lib/components/ui/textarea';
 
 	import { Send, Paperclip } from 'lucide-svelte';
 
-	let isLoading = $state(false);
+	let text = $state("");
+
+	let submitting = $state(false);
 
 	async function submitPrompt(
 		event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }
 	) {
+		submitting = true;
+
 		const data = new FormData(event.currentTarget);
 		const message = data.get('message');
 
@@ -32,7 +38,25 @@
 		const res = await response.json();
 
 		if (!response.ok) {
-			
+			submitting = false;
+			return;
+		}
+
+		if (!thread) {
+			goto(`/chat/${res.thread}`);
+		}
+
+		text = "";
+		submitting = false;
+	}
+
+	function handleKeyDown(event: KeyboardEvent) {
+		if (event.key === 'Enter' && !event.shiftKey) {
+			event.preventDefault(); // Prevents new line
+			const form = event.currentTarget.closest('form');
+			if (form) {
+				form.dispatchEvent(new Event('submit', { cancelable: true })); // Submit the form
+			}
 		}
 	}
 </script>
@@ -44,7 +68,9 @@
 			name="message"
 			placeholder="Message assistant..."
 			class="max-h-48 min-h-24 resize-none pr-12 pb-12"
-			disabled={isLoading}
+			bind:value={text}
+			disabled={submitting || processing}
+			onkeydown={handleKeyDown}
 		/>
 		<!--<Button
 			type="submit"
@@ -55,7 +81,7 @@
 		>
 			<Paperclip class="h-4 w-4" />
 		</Button>-->
-		<Button type="submit" size="icon" disabled={isLoading} class="absolute right-2 bottom-2">
+		<Button type="submit" size="icon" disabled={submitting || processing} class="absolute right-2 bottom-2">
 			<Send class="h-4 w-4" />
 		</Button>
 	</div>

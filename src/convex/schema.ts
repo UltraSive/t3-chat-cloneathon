@@ -25,6 +25,7 @@ export default defineSchema({
     status: v.union(
       v.literal("finished"),
       v.literal("processing"),
+      v.literal("failed")
     ),
     user: v.string(),
     thread: v.id("threads"),

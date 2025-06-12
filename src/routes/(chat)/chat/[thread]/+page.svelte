@@ -12,7 +12,7 @@
 
 	import { User, Bot } from 'lucide-svelte';
 
-	import type { PageProps } from '../[id]/$types';
+	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
 	const { user } = data;
 
@@ -21,6 +21,11 @@
 	const query = useQuery(api.threads.getThreadWithMessages, {
 		threadId,
 		userId: user.id
+	});
+
+	let processing = $derived.by(() => {
+		console.log("processing");
+		return query.data?.messages?.some((m) => m.status === 'processing') ?? false;
 	});
 </script>
 
@@ -57,6 +62,6 @@
 		</div>
 	</ScrollArea>
 	<div class="bg-background/70 sticky bottom-2 mx-4 backdrop-blur-md">
-		<MessageInput />
+		<MessageInput thread={page.params.thread} bind:processing={processing} />
 	</div>
 </div>
