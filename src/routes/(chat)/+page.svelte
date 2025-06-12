@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { fly } from 'svelte/transition';
+
 	import MessageInput from '$lib/components/chat/MessageInput.svelte';
 
 	import { Button } from '$lib/components/ui/button';
@@ -9,7 +11,7 @@
 </script>
 
 <div class="flex h-full flex-1 flex-col">
-	<div class="flex h-full flex-col items-center justify-center gap-4">
+	<div in:fly={{ y: 20, duration: 400 }} class="flex h-full flex-col items-center justify-center gap-4">
 		<p class="text-2xl font-bold md:text-4xl">How can I assist you?</p>
 		{#if !user}
 			<p class="text-muted-foreground text-lg font-semibold">
