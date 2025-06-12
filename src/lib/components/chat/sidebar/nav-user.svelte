@@ -12,18 +12,11 @@
 		Settings,
 		ChevronsUpDownIcon,
 		BadgeCheckIcon,
-    Sun,
+		Sun,
 		Moon
 	} from 'lucide-svelte';
-	let {
-		user
-	}: {
-		user: {
-			name: string;
-			email: string;
-			avatar: string;
-		};
-	} = $props();
+	let { user } = $props();
+  
 	const sidebar = useSidebar();
 </script>
 
@@ -43,7 +36,7 @@
 						</Avatar.Root>
 						<div class="grid flex-1 text-left text-sm leading-tight">
 							<span class="truncate font-medium">{user.name}</span>
-							<span class="truncate text-xs">{user.email}</span>
+							<span class="truncate text-xs">{user.stripeSubscriptionId ? 'Pro' : 'Free'}</span>
 						</div>
 						<ChevronsUpDownIcon class="ml-auto size-4" />
 					</Sidebar.MenuButton>
@@ -69,10 +62,12 @@
 				</DropdownMenu.Label>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Group>
-					<DropdownMenu.Item>
-						<SparklesIcon />
-						Upgrade to Pro
-					</DropdownMenu.Item>
+					{#if !user.stripeSubscriptionId}
+						<DropdownMenu.Item>
+							<SparklesIcon />
+							Upgrade to Pro
+						</DropdownMenu.Item>
+					{/if}
 				</DropdownMenu.Group>
 				<DropdownMenu.Group>
 					<DropdownMenu.Item onclick={() => (document.location = '/settings')}>
@@ -82,14 +77,14 @@
 				</DropdownMenu.Group>
 				<DropdownMenu.Item onclick={toggleMode}>
 					<Sun
-						class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+						class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
 					/>
 					<Moon
-						class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+						class="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
 					/>
 					Toggle Mode
 				</DropdownMenu.Item>
-        <DropdownMenu.Separator />
+				<DropdownMenu.Separator />
 				<DropdownMenu.Item>
 					<LogOutIcon />
 					Log out

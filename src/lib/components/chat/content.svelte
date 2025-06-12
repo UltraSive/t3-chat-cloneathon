@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { marked } from 'marked';
-	import hljs from 'highlight.js';
-	import 'highlight.js/styles/github.css';
 	import CodeBlock from './CodeBlock.svelte';
 
 	let { content = $bindable('') } = $props();
