@@ -8,6 +8,7 @@
 	import MessageInput from '$lib/components/chat/MessageInput.svelte';
 	import ChatSkeleton from '$lib/components/chat/Skeleton.svelte';
 	import LoadError from '$lib/components/chat/LoadError.svelte';
+	import ScrollDownButton from '$lib/components/chat/ScrollDownButton.svelte';
 
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import { Skeleton } from '$lib/components/ui/skeleton';
@@ -15,6 +16,34 @@
 	import { User, Bot } from 'lucide-svelte';
 
 	import type { PageProps } from './$types';
+
+	let scrollArea: HTMLDivElement | null = $state(null);
+	let isAtBottom = $state(false);
+
+	const scrollToBottom = () => {
+		if (scrollArea) {
+			scrollArea.scrollTop = scrollArea.scrollHeight;
+		}
+	};
+
+	const checkScroll = () => {
+		console.log("checking scroll");
+		if (scrollArea) {
+			const { scrollTop, scrollHeight, clientHeight } = scrollArea;
+			isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
+		}
+	};
+
+	/*$effect(() => {
+    if (scrollArea) {
+      scrollArea.addEventListener('scroll', checkScroll);
+      checkScroll(); // Initial check
+    }
+    
+    return () => {
+      scrollArea.removeEventListener('scroll', checkScroll);
+    };
+  });*/
 
 	let { data }: PageProps = $props();
 	const { user } = data;
@@ -34,7 +63,7 @@
 </script>
 
 <div class="flex h-full flex-1 flex-col">
-	<ScrollArea class="flex-1 p-4">
+	<ScrollArea bind:ref={scrollArea} class="flex-1 p-4">
 		<div class="mx-auto max-w-3xl">
 			{#if query.isLoading}
 				<ChatSkeleton />
@@ -79,6 +108,7 @@
 		</div>
 	</ScrollArea>
 	<div class="bg-background/70 sticky bottom-2 mx-4 backdrop-blur-md">
+		<!--<ScrollDownButton bind:isAtBottom={isAtBottom} {scrollToBottom} />-->
 		<MessageInput thread={page.params.thread} bind:processing />
 	</div>
 </div>

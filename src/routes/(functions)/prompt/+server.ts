@@ -74,6 +74,7 @@ async function processRelay(model: string, messages: Message[], responseId: stri
 
     let lineEnd;
     while ((lineEnd = buffer.indexOf('\n')) !== -1) {
+      console.log("inner while")
       const line = buffer.slice(0, lineEnd).trim();
       buffer = buffer.slice(lineEnd + 1);
 
@@ -87,6 +88,7 @@ async function processRelay(model: string, messages: Message[], responseId: stri
 
           if (delta) {
             content += delta;
+            console.log(delta);
             scheduleUpdate();
           }
         } catch (e) {

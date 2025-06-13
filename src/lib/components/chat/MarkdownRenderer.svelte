@@ -4,7 +4,7 @@
 	let { content = $bindable('') } = $props();
 
 	// Parse markdown content
-	const tokens = marked.lexer(content);
+	let tokens = $derived(marked.lexer(content));
 </script>
 
 <div
@@ -12,7 +12,7 @@
 >
 	{#each tokens as token}
 		{#if token.type === 'code'}
-			<CodeBlock code={token.text} language={token.lang} />
+			<CodeBlock bind:code={token.text} bind:language={token.lang} />
 		{:else}
 			{@html marked.parser([token])}
 		{/if}

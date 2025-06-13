@@ -2,7 +2,7 @@
 	import hljs from 'highlight.js';
 	import 'highlight.js/styles/github.css';
 
-	let { code, language = '' } = $props();
+	let { code = $bindable(""), language = $bindable('') } = $props();
 
 	let highlighted = $derived.by(() => {
 		if (language && hljs.getLanguage(language)) {
