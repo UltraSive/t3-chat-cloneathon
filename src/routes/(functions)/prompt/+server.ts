@@ -86,7 +86,7 @@ async function processRelay(model: string, messages: Message[], responseId: stri
           const delta = message.choices?.[0]?.delta?.content;
 
           if (delta) {
-            content += delta; // 👈 append to full content
+            content += delta;
             scheduleUpdate();
           }
         } catch (e) {
@@ -96,7 +96,7 @@ async function processRelay(model: string, messages: Message[], responseId: stri
     }
   }
   // Make sure the live updates is done before finishing the message.
-  await new Promise(resolve => setTimeout(resolve, 250));
+  await new Promise(resolve => setTimeout(resolve, 300));
   await convexClient.mutation(api.messages.updateMessage, {
     message: responseId,
     content,

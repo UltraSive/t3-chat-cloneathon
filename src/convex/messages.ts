@@ -57,7 +57,7 @@ export const updateMessage = mutation({
     )),
   },
   handler: async (ctx, { message, content, status }) => {
-    const messageId = message as Id<'message'>;
+    const messageId = message as Id<'messages'>;
 
     const existing = await ctx.db.get(messageId);
     if (!existing) {
