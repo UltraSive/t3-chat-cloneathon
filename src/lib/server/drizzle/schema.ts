@@ -65,25 +65,10 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
   }),
 }));
 
-// Providers table
-export const providers = pgTable('providers', {
-  id: varchar('id', { length: 255 }).primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
-});
-
-export type Provider = InferSelectModel<typeof providers>;
-export type NewProvider = InferInsertModel<typeof providers>;
-
-export const providersRelations = relations(providers, ({ many }) => ({
-  models: many(models),
-}));
-
 // Individual models table
 export const models = pgTable('models', {
   id: varchar('id', { length: 255 }).primaryKey(),
-  providerId: varchar('id', { length: 255 })
-    .notNull()
-    .references(() => providers.id, { onDelete: 'cascade' }),
+  provider: varchar('provider', { length: 255 }).notNull(),
   name: varchar('name', { length: 255 }).notNull(), // internal model ID (e.g., "gpt-4")
   type: varchar('name', { length: 255 }),
   info: text('info'),
@@ -93,10 +78,3 @@ export const models = pgTable('models', {
 
 export type Model = InferSelectModel<typeof models>;
 export type NewModel = InferInsertModel<typeof models>;
-
-export const modelsRelations = relations(models, ({ one }) => ({
-  provider: one(providers, {
-    fields: [models.providerId],
-    references: [providers.id],
-  }),
-}));
