@@ -1,7 +1,8 @@
 <script lang="ts">
   import "../app.css";
 
-  import { ModeWatcher } from 'mode-watcher';
+  import { ModeWatcher, setMode } from 'mode-watcher';
+  setMode("dark");
 
   const { children } = $props();
 </script>

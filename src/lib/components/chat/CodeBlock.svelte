@@ -1,8 +1,8 @@
 <script lang="ts">
 	import hljs from 'highlight.js';
-	import 'highlight.js/styles/github.css';
+  import 'highlight.js/styles/github-dark.css'
 
-	let { code = $bindable(""), language = $bindable('') } = $props();
+	let { code = $bindable(''), language = $bindable('') } = $props();
 
 	let highlighted = $derived.by(() => {
 		if (language && hljs.getLanguage(language)) {
@@ -88,9 +88,9 @@
 </div>
 
 <style>
-	.hljs {
-		background: transparent !important;
-		padding-top: 0 !important;
-		padding-bottom: 0 !important;
-	}
+  .hljs {
+			background: transparent !important;
+			padding-top: 0 !important;
+			padding-bottom: 0 !important;
+		}
 </style>

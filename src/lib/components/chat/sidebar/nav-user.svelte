@@ -74,7 +74,7 @@
 						<Settings />
 						Settings
 					</DropdownMenu.Item>
-				</DropdownMenu.Group>
+				</DropdownMenu.Group><!--
 				<DropdownMenu.Item onclick={toggleMode}>
 					<Sun
 						class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
@@ -84,6 +84,7 @@
 					/>
 					Toggle Mode
 				</DropdownMenu.Item>
+        -->
 				<DropdownMenu.Separator />
 				<DropdownMenu.Item onclick={() => (document.location = '/logout')}>
 					<LogOutIcon />
