@@ -89,10 +89,10 @@
 							{/if}
 						</div>
 
-						<div class="flex-1 space-y-2 overflow-hidden px-1" class:text-right={isUser}>
-							<div class="font-semibold">{isUser ? 'You' : 'Assistant'}</div>
+						<div class="flex-1 space-y-2 overflow-hidden px-1">
+							<div class="font-semibold" class:text-right={isUser}>{isUser ? 'You' : 'Assistant'}</div>
 							{#if message.role === 'user'}
-								{message.content}
+								<div class="whitespace-pre-wrap">{message.content}</div>
 							{:else if message.role === 'assistant'}
 								{#if message.content === '' && message.status === 'processing'}
 									<Skeleton class="h-4 w-full" />

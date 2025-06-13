@@ -47,23 +47,40 @@ async function processRelay(model: string, messages: Message[], responseId: stri
   const decoder = new TextDecoder();
   let buffer = '';
 
-  let content = ''; // 👈 initialize accumulator
+  let content = '';
+  let nextTask: (() => Promise<void>) | null = null;
+  let processing = false;
 
-  let updateTimer: NodeJS.Timeout | null = null;
-  function scheduleUpdate() {
-    if (updateTimer) return;
-    updateTimer = setTimeout(async () => {
-      updateTimer = null;
+  function enqueueLatestUpdate(status: string) {
+    // Replace any existing pending task with the latest one
+    nextTask = async () => {
       try {
         await convexClient.mutation(api.messages.updateMessage, {
           message: responseId,
           content,
-          status: "processing"
+          status
         });
       } catch (err) {
         console.error("Convex update error:", err);
       }
-    }, 250);
+    };
+
+    if (!processing) {
+      processNextTask();
+    }
+  }
+
+  async function processNextTask() {
+    processing = true;
+
+    while (nextTask) {
+      const task = nextTask;
+      nextTask = null; // Clear the task reference before running
+
+      await task();
+    }
+
+    processing = false;
   }
 
   while (true) {
@@ -74,7 +91,6 @@ async function processRelay(model: string, messages: Message[], responseId: stri
 
     let lineEnd;
     while ((lineEnd = buffer.indexOf('\n')) !== -1) {
-      console.log("inner while")
       const line = buffer.slice(0, lineEnd).trim();
       buffer = buffer.slice(lineEnd + 1);
 
@@ -88,8 +104,7 @@ async function processRelay(model: string, messages: Message[], responseId: stri
 
           if (delta) {
             content += delta;
-            console.log(delta);
-            scheduleUpdate();
+            enqueueLatestUpdate("processing");
           }
         } catch (e) {
           console.error('Parse error:', e);
@@ -97,13 +112,14 @@ async function processRelay(model: string, messages: Message[], responseId: stri
       }
     }
   }
-  // Make sure the live updates is done before finishing the message.
-  await new Promise(resolve => setTimeout(resolve, 300));
+
+  enqueueLatestUpdate("finished");
+  /*await new Promise(resolve => setTimeout(resolve, 300));
   await convexClient.mutation(api.messages.updateMessage, {
     message: responseId,
     content,
     status: "finished"
-  })
+  });*/
 }
 
 // Define a Zod schema for action
