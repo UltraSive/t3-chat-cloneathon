@@ -3,7 +3,7 @@ import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { api } from './_generated/api'; 
 
-export const createThread = mutation({
+export const createUserThread = mutation({
   args: {
     description: v.optional(v.string()),
     user: v.string(),
@@ -28,7 +28,7 @@ export const createThread = mutation({
   },
 });
 
-export const getPaginatedThreadsWithOldestMessage = query({
+export const getUserPaginatedThreadsWithOldestMessage = query({
   args: {
     offset: v.number(),
     count: v.number(),
@@ -80,7 +80,7 @@ export const getThread = query({
   },
 });
 
-export const getThreadWithMessages = query({
+export const getUserThreadWithMessages = query({
   args: {
     thread: v.string(),
     user: v.string()

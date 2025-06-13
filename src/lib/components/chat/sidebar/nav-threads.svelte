@@ -8,7 +8,7 @@
 
   let { user } = $props();
 
-  const query = useQuery(api.threads.getPaginatedThreadsWithOldestMessage, {
+  const query = useQuery(api.threads.getUserPaginatedThreadsWithOldestMessage, {
 		offset: 0,
 		count: 20,
     user: user.id

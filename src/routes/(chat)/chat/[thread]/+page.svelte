@@ -49,7 +49,7 @@
 	const { user } = data;
 
 	const query = $derived(
-		useQuery(api.threads.getThreadWithMessages, {
+		useQuery(api.threads.getUserThreadWithMessages, {
 			thread: page.params.thread,
 			user: user.id
 		})

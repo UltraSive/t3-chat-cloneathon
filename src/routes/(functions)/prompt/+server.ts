@@ -147,7 +147,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
     referencedThread = threadQuery._id;
   } else {
-    const [threadErr, threadMutation] = await catchError(convexClient.mutation(api.threads.createThread, {
+    const [threadErr, threadMutation] = await catchError(convexClient.mutation(api.threads.createUserThread, {
       user: user.id,
     }));
 
@@ -158,7 +158,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     referencedThread = threadMutation;
   }
 
-  const [userErr, userMutation] = await catchError(convexClient.mutation(api.messages.createMessage, {
+  const [userErr, userMutation] = await catchError(convexClient.mutation(api.messages.createUserMessage, {
     threadId: referencedThread,
     role: "user",
     content: message,
@@ -166,7 +166,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     user: user.id
   }));
 
-  const [assistantErr, assistantMutation] = await catchError(convexClient.mutation(api.messages.createMessage, {
+  const [assistantErr, assistantMutation] = await catchError(convexClient.mutation(api.messages.createUserMessage, {
     threadId: referencedThread,
     role: "assistant",
     content: "",

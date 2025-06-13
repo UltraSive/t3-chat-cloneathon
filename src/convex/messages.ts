@@ -2,7 +2,7 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 
-export const createMessage = mutation({
+export const createUserMessage = mutation({
   args: {
     threadId: v.string(),
     role: v.union(
@@ -28,7 +28,7 @@ export const createMessage = mutation({
     const now = new Date().toISOString();
 
     const messageId = await ctx.db.insert("messages", {
-      thread: threadId,
+      thread: threadIdType,
       content,
       role,
       createdAt: now,
@@ -75,18 +75,20 @@ export const updateMessage = mutation({
 
 export const getMessagesFromThread = query({
   args: {
-    threadId: v.id("threads"),
-    userId: v.string()
+    thread: v.string(),
+    user: v.string()
   },
-  handler: async (ctx, { threadId, userId }) => {
+  handler: async (ctx, { thread, user }) => {
+    const threadId = thread as Id<'threads'>;
+
     // Step 1: Get the thread
-    const thread = await ctx.db.get(threadId);
-    if (!thread) {
+    const result = await ctx.db.get(threadId);
+    if (!result) {
       throw new Error("Thread not found");
     }
 
     // Step 2: Check if thread belongs to the user
-    if (thread.user !== userId) {
+    if (result.user !== user) {
       throw new Error("Unauthorized access to thread");
     }
 
