@@ -1,6 +1,7 @@
 <script lang="ts">
   import "../app.css";
 
+  import { Toaster } from "$lib/components/ui/sonner";
   import { ModeWatcher, setMode } from 'mode-watcher';
   setMode("dark");
 
@@ -9,4 +10,5 @@
 
 {@render children()}
 
+<Toaster />
 <ModeWatcher />
