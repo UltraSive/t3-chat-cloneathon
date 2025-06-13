@@ -32,6 +32,7 @@ export default defineSchema({
       v.literal("shared")
     ),
     model: v.optional(v.string()),
+    premium: v.optional(v.boolean()),
     user: v.string(),
     thread: v.id("threads"),
   }).index("by_thread", ["thread", "createdAt"]),

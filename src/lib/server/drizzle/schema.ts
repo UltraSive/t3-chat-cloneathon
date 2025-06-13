@@ -12,6 +12,7 @@ export const users = pgTable('users', {
   name: varchar('name', { length: 255 }),
   stripeCustomerId: varchar('stripe_customer_id', { length: 255 }),
   stripeSubscriptionId: varchar('stripe_subscription_id', { length: 255 }),
+  subscribedAt: timestamp("subscribed_at", { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
