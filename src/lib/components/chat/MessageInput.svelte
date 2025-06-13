@@ -3,15 +3,18 @@
 
 	import { preventDefault } from '$lib/modifiers';
 
-	let { thread, model = 'openai/gpt-4o-mini', processing = $bindable() } = $props();
+	let { thread, models, model = $bindable(), processing = $bindable() } = $props();
+
+	import ModelSelect from './ModelSelect.svelte';
 
 	import { Button } from '$lib/components/ui/button';
 	import { Textarea } from '$lib/components/ui/textarea';
 
 	import { Send, Paperclip } from 'lucide-svelte';
 
-	let text = $state("");
-
+	let text = $state('');
+	let selectedModel = $derived(models.find((m) => m.id === model));
+	let tool = $state(undefined);
 	let submitting = $state(false);
 
 	async function submitPrompt(
@@ -46,7 +49,7 @@
 			goto(`/chat/${res.thread}`);
 		}
 
-		text = "";
+		text = '';
 		submitting = false;
 	}
 
@@ -67,11 +70,19 @@
 			id="message"
 			name="message"
 			placeholder="Message assistant..."
-			class="max-h-48 min-h-24 resize-none pr-12 pb-12"
+			class="max-h-72 min-h-36 resize-none pr-12 pb-12"
 			bind:value={text}
-			disabled={submitting || processing}
+			disabled={submitting || processing || !model}
 			onkeydown={handleKeyDown}
 		/>
+		<div class="absolute bottom-2 left-2">
+			<ModelSelect {models} bind:selected={model} />
+			{#if selectedModel.tools}
+				{#if selectedModel.tools.length > 0}
+					<ModelSelect bind:tools={selectedModel.tools} bind:selected={tool} />
+				{/if}
+			{/if}
+		</div>
 		<!--<Button
 			type="submit"
 			size="icon"
@@ -81,7 +92,12 @@
 		>
 			<Paperclip class="h-4 w-4" />
 		</Button>-->
-		<Button type="submit" size="icon" disabled={submitting || processing} class="absolute right-2 bottom-2">
+		<Button
+			type="submit"
+			size="icon"
+			disabled={submitting || processing || !model}
+			class="absolute right-2 bottom-2"
+		>
 			<Send class="h-4 w-4" />
 		</Button>
 	</div>

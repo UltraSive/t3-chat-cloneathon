@@ -28,8 +28,10 @@ export default defineSchema({
       v.literal("finished"),
       v.literal("processing"),
       v.literal("failed"),
-      v.literal("archived")
+      v.literal("archived"),
+      v.literal("shared")
     ),
+    model: v.optional(v.string()),
     user: v.string(),
     thread: v.id("threads"),
   }).index("by_thread", ["thread", "createdAt"]),

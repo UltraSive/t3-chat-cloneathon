@@ -46,7 +46,9 @@
   });*/
 
 	let { data }: PageProps = $props();
-	const { user } = data;
+	const { user, models } = data;
+
+	let model = $state(models[0].id);
 
 	const query = $derived(
 		useQuery(api.threads.getUserThreadWithMessages, {
@@ -109,6 +111,6 @@
 	</ScrollArea>
 	<div class="bg-background/70 sticky bottom-2 mx-4 backdrop-blur-md">
 		<!--<ScrollDownButton bind:isAtBottom={isAtBottom} {scrollToBottom} />-->
-		<MessageInput thread={page.params.thread} bind:processing />
+		<MessageInput bind:model {models} thread={page.params.thread} bind:processing />
 	</div>
 </div>

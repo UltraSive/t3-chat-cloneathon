@@ -7,7 +7,7 @@
 
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
-	const { user } = data;
+	const { user, models } = data;
 </script>
 
 <div class="flex h-full flex-1 flex-col">
@@ -55,6 +55,6 @@
 		{/if}
 	</div>
 	<div class="bg-background/70 sticky bottom-2 mx-4 backdrop-blur-md">
-		<MessageInput />
+		<MessageInput {models} />
 	</div>
 </div>
