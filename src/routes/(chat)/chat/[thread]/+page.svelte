@@ -4,12 +4,13 @@
 	import { useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api.js';
 
-	import Content from '$lib/components/chat/Content.svelte';
+	import MarkdownRenderer from '$lib/components/chat/MarkdownRenderer.svelte';
 	import MessageInput from '$lib/components/chat/MessageInput.svelte';
 	import ChatSkeleton from '$lib/components/chat/Skeleton.svelte';
 	import LoadError from '$lib/components/chat/LoadError.svelte';
 
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
+	import { Skeleton } from '$lib/components/ui/skeleton';
 
 	import { User, Bot } from 'lucide-svelte';
 
@@ -61,7 +62,16 @@
 
 						<div class="flex-1 space-y-2 overflow-hidden px-1" class:text-right={isUser}>
 							<div class="font-semibold">{isUser ? 'You' : 'Assistant'}</div>
-							<Content bind:content={message.content} />
+							{#if message.role === 'user'}
+								{message.content}
+							{:else if message.role === 'assistant'}
+								{#if message.content === '' && message.status === 'processing'}
+									<Skeleton class="h-4 w-full" />
+									<Skeleton class="h-4 w-3/4" />
+								{:else}
+									<MarkdownRenderer bind:content={message.content} />
+								{/if}
+							{/if}
 						</div>
 					</div>
 				{/each}

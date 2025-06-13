@@ -1,5 +1,15 @@
 <script>
-	let { code, lang = '' } = $props();
+  import hljs from 'highlight.js';
+	import 'highlight.js/styles/github.css'; // or any other theme
+
+	let { code, language = '' } = $props();
+
+  let highlighted = $derived.by(() => {
+		if (language && hljs.getLanguage(language)) {
+			return hljs.highlight(code, { language }).value;
+		}
+		return hljs.highlightAuto(code).value;
+	});
 
 	let copied = $state(false);
 
@@ -11,31 +21,6 @@
 	}
 </script>
 
-<div class="code-block-wrapper">
-	<button class="copy-btn" onclick={copy}>
-		{copied ? 'Copied!' : 'Copy'}
-	</button>
-	<pre><code class="hljs language-{lang}">{@html code}</code></pre>
+<div class="not-prose">
+	<pre><code class="hljs language-{language}">{@html highlighted}</code></pre>
 </div>
-
-<style>
-	.code-block-wrapper {
-		position: relative;
-	}
-
-	.copy-btn {
-		position: absolute;
-		top: 6px;
-		right: 6px;
-		font-size: 0.75rem;
-		padding: 2px 6px;
-		cursor: pointer;
-		border: none;
-		border-radius: 4px;
-		background: #f0f0f0;
-	}
-
-	pre {
-		padding-top: 2em;
-	}
-</style>
