@@ -18,3 +18,9 @@
 		{/if}
 	{/each}
 </div>
+
+<style>
+	.prose {
+		max-width: none; /* or specify your desired width */
+	}
+</style>

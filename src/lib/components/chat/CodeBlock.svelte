@@ -54,7 +54,7 @@
 </script>
 
 <div bind:this={blockEl} class="not-prose relative my-4">
-	<!-- Sticky copy bar when scrolled past -->
+	<!-- Sticky copy bar when scrolled past 
 	{#if sticky}
 		<div
 			class="bg-muted fixed z-50 flex items-center justify-between border-b px-4 py-2 font-mono text-xs"
@@ -68,7 +68,7 @@
 				{copied ? 'Copied!' : 'Copy'}
 			</button>
 		</div>
-	{/if}
+	{/if}-->
 
 	<!-- Normal title/copy row -->
 	<div class="bg-muted flex items-center justify-between rounded-t px-4 py-2 font-mono text-xs">

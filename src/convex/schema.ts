@@ -10,6 +10,7 @@ export default defineSchema({
     status: v.union(
       v.literal("finished"),
       v.literal("processing"),
+      v.literal("archived")
     ),
     parentThread: v.optional(v.id("threads")),
     user: v.string(),
@@ -26,7 +27,8 @@ export default defineSchema({
     status: v.union(
       v.literal("finished"),
       v.literal("processing"),
-      v.literal("failed")
+      v.literal("failed"),
+      v.literal("archived")
     ),
     user: v.string(),
     thread: v.id("threads"),
