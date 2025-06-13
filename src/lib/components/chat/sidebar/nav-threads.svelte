@@ -11,7 +11,7 @@
   const query = useQuery(api.threads.getUserPaginatedThreadsWithOldestMessage, {
 		offset: 0,
 		count: 20,
-    user: user.id
+    user: user ? user.id : ""
 	});
 
   function truncateChars(str, maxChars) {
