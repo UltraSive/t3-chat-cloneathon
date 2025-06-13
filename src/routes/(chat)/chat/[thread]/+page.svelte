@@ -4,6 +4,8 @@
 	import { useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api.js';
 
+	import { toast } from 'svelte-sonner';
+
 	import MarkdownRenderer from '$lib/components/chat/MarkdownRenderer.svelte';
 	import MessageInput from '$lib/components/chat/MessageInput.svelte';
 	import ChatSkeleton from '$lib/components/chat/Skeleton.svelte';
@@ -12,8 +14,9 @@
 
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import { Skeleton } from '$lib/components/ui/skeleton';
+	import { Button } from '$lib/components/ui/button';
 
-	import { User, Bot } from 'lucide-svelte';
+	import { User, Bot, Copy, RotateCcw } from 'lucide-svelte';
 
 	import type { PageProps } from './$types';
 
@@ -27,7 +30,7 @@
 	};
 
 	const checkScroll = () => {
-		console.log("checking scroll");
+		console.log('checking scroll');
 		if (scrollArea) {
 			const { scrollTop, scrollHeight, clientHeight } = scrollArea;
 			isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
@@ -44,6 +47,18 @@
       scrollArea.removeEventListener('scroll', checkScroll);
     };
   });*/
+
+	let hoveredMessageId: string | null = $state(null);
+
+	const copyToClipboard = async (text: string) => {
+    try {
+        await navigator.clipboard.writeText(text);
+        // Optionally, provide feedback to the user
+        toast.success('Copied to clipboard!');
+    } catch (err) {
+        toast.error(`Failed to copy: ${err}`);
+    }
+};
 
 	let { data }: PageProps = $props();
 	const { user, models } = data;
@@ -75,34 +90,52 @@
 				{#each query.data.messages as message}
 					{@const isUser = message.role === 'user'}
 					<div
-						class="mb-6 flex gap-4 rounded-lg p-4"
-						class:flex-row-reverse={isUser}
-						class:bg-muted={isUser}
+						role="group"
+						onmouseenter={() => (hoveredMessageId = message._id)}
+						onmouseleave={() => (hoveredMessageId = null)}
 					>
 						<div
-							class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md select-none"
-							class:bg-primary={isUser}
-							class:bg-muted={!isUser}
+							class="mb-2 flex gap-4 rounded-lg p-4"
+							class:flex-row-reverse={isUser}
+							class:bg-muted={isUser}
 						>
-							{#if isUser}
-								<User class="h-4 w-4 text-white" />
-							{:else}
-								<Bot class="text-foreground h-4 w-4" />
-							{/if}
-						</div>
-
-						<div class="flex-1 space-y-2 overflow-hidden px-1">
-							<div class="font-semibold" class:text-right={isUser}>{isUser ? 'You' : 'Assistant'}</div>
-							{#if message.role === 'user'}
-								<div class="whitespace-pre-wrap">{message.content}</div>
-							{:else if message.role === 'assistant'}
-								{#if message.content === '' && message.status === 'processing'}
-									<Skeleton class="h-4 w-full" />
-									<Skeleton class="h-4 w-3/4" />
+							<div
+								class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md select-none"
+								class:bg-primary={isUser}
+								class:bg-muted={!isUser}
+							>
+								{#if isUser}
+									<User class="h-4 w-4 text-white" />
 								{:else}
-									<MarkdownRenderer bind:content={message.content} />
+									<Bot class="text-foreground h-4 w-4" />
 								{/if}
-							{/if}
+							</div>
+
+							<div class="flex-1 space-y-2 overflow-hidden px-1">
+								<div class="font-semibold" class:text-right={isUser}>
+									{isUser ? 'You' : 'Assistant'}
+								</div>
+								{#if message.role === 'user'}
+									<div class="whitespace-pre-wrap">{message.content}</div>
+								{:else if message.role === 'assistant'}
+									{#if message.content === '' && message.status === 'processing'}
+										<Skeleton class="h-4 w-full" />
+										<Skeleton class="h-4 w-3/4" />
+									{:else}
+										<MarkdownRenderer bind:content={message.content} />
+									{/if}
+								{/if}
+							</div>
+						</div>
+						<div
+							class="mb-2 px-4 space-x-0.5 transition-opacity duration-200"
+							class:text-right={isUser}
+							class:opacity-100={hoveredMessageId === message._id && message.status === "finished"}
+							class:opacity-0={hoveredMessageId !== message._id}
+							class:pointer-events-none={hoveredMessageId !== message._id}
+						>
+							<Button variant="ghost" size="sm" onclick={() => copyToClipboard(message.content)}><Copy class="h-3 w-3" /></Button>
+							<Button variant="ghost" size="sm"><RotateCcw class="h-3 w-3" /></Button>
 						</div>
 					</div>
 				{/each}
