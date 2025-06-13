@@ -46,31 +46,26 @@ async function processRelay(model: string, messages: Message[], responseId: stri
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
-  let content = '';
 
-  // Debounce utility
-  function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
-    let timer: NodeJS.Timeout;
-    return (...args: Parameters<T>) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn(...args), delay);
-    };
+  let content = ''; // 👈 initialize accumulator
+
+  let updateTimer: NodeJS.Timeout | null = null;
+  function scheduleUpdate() {
+    if (updateTimer) return;
+    updateTimer = setTimeout(async () => {
+      updateTimer = null;
+      try {
+        await convexClient.mutation(api.messages.updateMessage, {
+          message: responseId,
+          content,
+          status: "processing"
+        });
+      } catch (err) {
+        console.error("Convex update error:", err);
+      }
+    }, 250);
   }
 
-  // Debounced updateMessage
-  const updateMessage = debounce(async () => {
-    try {
-      await convexClient.mutation(api.messages.updateMessage, {
-        message: responseId,
-        content,
-        status: "processing"
-      });
-    } catch (err) {
-      console.error("Convex update error:", err);
-    }
-  }, 250);
-
-  // Stream and process chunks
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -91,8 +86,8 @@ async function processRelay(model: string, messages: Message[], responseId: stri
           const delta = message.choices?.[0]?.delta?.content;
 
           if (delta) {
-            content += delta;
-            updateMessage(); // 👈 this is debounced
+            content += delta; // 👈 append to full content
+            scheduleUpdate();
           }
         } catch (e) {
           console.error('Parse error:', e);
@@ -100,16 +95,13 @@ async function processRelay(model: string, messages: Message[], responseId: stri
       }
     }
   }
-
-  // Wait a bit to flush final debounce
-  await new Promise(resolve => setTimeout(resolve, 300));
-
-  // Final status update
+  // Make sure the live updates is done before finishing the message.
+  await new Promise(resolve => setTimeout(resolve, 250));
   await convexClient.mutation(api.messages.updateMessage, {
     message: responseId,
     content,
     status: "finished"
-  });
+  })
 }
 
 // Define a Zod schema for action

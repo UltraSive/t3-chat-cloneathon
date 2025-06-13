@@ -52,7 +52,8 @@ export const updateMessage = mutation({
     content: v.optional(v.string()),
     status: v.optional(v.union(
       v.literal("finished"),
-      v.literal("processing")
+      v.literal("processing"),
+      v.literal("failed")
     )),
   },
   handler: async (ctx, { message, content, status }) => {

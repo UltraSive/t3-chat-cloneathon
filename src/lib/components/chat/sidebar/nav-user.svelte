@@ -16,7 +16,7 @@
 		Moon
 	} from 'lucide-svelte';
 	let { user } = $props();
-  
+
 	const sidebar = useSidebar();
 </script>
 
@@ -63,7 +63,7 @@
 				<DropdownMenu.Separator />
 				<DropdownMenu.Group>
 					{#if !user.stripeSubscriptionId}
-						<DropdownMenu.Item>
+						<DropdownMenu.Item onclick={() => (document.location = '/upgrade')}>
 							<SparklesIcon />
 							Upgrade to Pro
 						</DropdownMenu.Item>
@@ -85,7 +85,7 @@
 					Toggle Mode
 				</DropdownMenu.Item>
 				<DropdownMenu.Separator />
-				<DropdownMenu.Item>
+				<DropdownMenu.Item onclick={() => (document.location = '/logout')}>
 					<LogOutIcon />
 					Log out
 				</DropdownMenu.Item>
