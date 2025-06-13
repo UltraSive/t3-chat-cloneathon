@@ -179,7 +179,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     role: "user",
     content: message,
     status: "finished",
-    user: user.id
+    user: user.id,
+    model
   }));
 
   const [assistantErr, assistantMutation] = await catchError(convexClient.mutation(api.messages.createUserMessage, {
@@ -187,7 +188,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     role: "assistant",
     content: "",
     status: "processing",
-    user: user.id
+    user: user.id,
+    model
   }));
 
   if (assistantErr) {

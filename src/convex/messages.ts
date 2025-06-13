@@ -16,8 +16,9 @@ export const createUserMessage = mutation({
       v.literal("processing")
     )),
     user: v.string(),
+    model: v.string(),
   },
-  handler: async (ctx, { threadId, role, content, user }) => {
+  handler: async (ctx, { threadId, role, content, user, model }) => {
     const threadIdType = threadId as Id<'threads'>;
 
     const thread = await ctx.db.get(threadIdType);
@@ -34,6 +35,7 @@ export const createUserMessage = mutation({
       createdAt: now,
       status: "finished", // or "processing" based on your use case
       user,
+      model
     });
 
     // Optionally update the thread's lastMessageAt
