@@ -35,10 +35,6 @@
 			toast.loading('Attempting login...');
 		}
 	});
-
-	let tags = $state([])
-
-	$inspect($form.tags)
 </script>
 
 <form method="POST" use:enhance>

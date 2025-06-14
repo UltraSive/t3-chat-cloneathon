@@ -7,8 +7,18 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { fail } from '@sveltejs/kit';
 import { customizeSchema } from '$lib/schemas/customize';
 
-export const load: PageServerLoad = async ({ params }) => {
-  const form = await superValidate(zod(customizeSchema));
+export const load: PageServerLoad = async ({ locals, params }) => {
+  const { user } = locals;
+
+  // Define your input
+  const input = {
+    nickname: user.nickname ? user.nickname : "",
+    occupation: user.nickname ? user.occupation : "",
+    traits: user.traits ? user.traits : [],
+    additionalInfo: user.additionalInfo ? user.additionalInfo : ""
+  };
+
+  const form = await superValidate(input, zod(customizeSchema));
 
   return { form };
 };
