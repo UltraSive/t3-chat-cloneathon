@@ -11,10 +11,6 @@ RUN npm run generate
 RUN npx convex deploy --cmd='npm run build'
 RUN npm prune --production
 
-# Read the .env (e.g., echo a value)
-RUN export $(grep -v '^#' .env | xargs) && \
-    echo "Value of API_KEY: $API_KEY"
-
 FROM node:20 AS run
 
 ENV NODE_ENV=production

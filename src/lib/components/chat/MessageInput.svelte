@@ -26,7 +26,7 @@
 		const data = new FormData(event.currentTarget);
 		const message = data.get('message');
 
-		const response = await fetch('http://localhost:5173/prompt', {
+		const response = await fetch('/prompt', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
