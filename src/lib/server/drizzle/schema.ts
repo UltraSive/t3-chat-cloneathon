@@ -10,6 +10,7 @@ export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: varchar('email', { length: 255 }).notNull().unique(),
   name: varchar('name', { length: 255 }),
+  nickname: varchar('nickname', { length: 255 }),
   occupation: varchar('occupation', { length: 100 }), // New field for occupation
   traits: jsonb('traits'), // New field for traits, stored as JSON
   additionalInfo: varchar('additional_info', { length: 3000 }), // New field for additional info
@@ -74,7 +75,7 @@ export const models = pgTable('models', {
   id: varchar('id', { length: 255 }).primaryKey(),
   provider: varchar('provider', { length: 255 }).notNull(),
   name: varchar('name', { length: 255 }).notNull(), // internal model ID (e.g., "gpt-4")
-  type: varchar('name', { length: 255 }),
+  type: varchar('type', { length: 255 }),
   info: text('info'),
   contextLength: integer('context_length').notNull(),
   premium: boolean('premium'),

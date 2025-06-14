@@ -57,6 +57,13 @@
       "when": 1749908086419,
       "tag": "0007_petite_masque",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1749923676627,
+      "tag": "0008_whole_puff_adder",
+      "breakpoints": true
     }
   ]
 }
