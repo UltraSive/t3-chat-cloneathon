@@ -47,7 +47,7 @@
 			<Card.Title>Customize Chat Experience</Card.Title>
 		</Card.Header>
 		<Card.Content class="space-y-6">
-			<SuperDebug data={$form} />
+			<!--<SuperDebug data={$form} />-->
 			{#if $message}
 				<Alert.Root>
 					<Info class="h-4 w-4" />

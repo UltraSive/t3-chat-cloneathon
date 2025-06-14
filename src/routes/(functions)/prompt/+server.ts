@@ -125,7 +125,7 @@ async function processRelay(model: string, messages: Message[], responseId: stri
 // Define a Zod schema for action
 const chatSchema = z.object({
   thread: z.optional(z.string()),
-  modify: z.optional(z.string()),
+  modify: z.optional(z.string()), // Used to edit a message or retry (if you use the same message)
   model: z.string(),
   message: z.string()
 });
