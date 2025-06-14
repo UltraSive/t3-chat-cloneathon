@@ -38,12 +38,13 @@
 					{/if}
 				</div>
 			</div>
-			<Card>
-				<CardHeader>
-					<CardTitle>Message Usage</CardTitle>
-					<CardDescription>Resets tomorrow at 7:00 PM</CardDescription>
-				</CardHeader>
-				<CardContent>
+      <!--
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Message Usage</Card.Title>
+					<Card.Description>Resets tomorrow at 7:00 PM</CardDescription>
+				</Card.Header>
+				<Card.Content>
 					<div className="space-y-4">
 						<div className="flex items-center justify-between">
 							<span className="text-sm font-medium">Standard</span>
@@ -52,8 +53,9 @@
 						<Progress value={5} className="h-2" />
 						<p className="text-sm text-muted-foreground">19 messages remaining</p>
 					</div>
-				</CardContent>
-			</Card>
+				</Card.Content>
+			</Card.Root>
+      -->
 		</div>
 		{@render children()}
 	</div>
