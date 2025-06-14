@@ -77,5 +77,5 @@
 			not available.
 		</p>
 	</div>
-	<Customize bind:data={data.form} />
+	<Customize data={data.form} />
 </div>

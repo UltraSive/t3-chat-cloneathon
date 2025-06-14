@@ -24,23 +24,30 @@
 
 	import type { SuperValidated, Infer } from 'sveltekit-superforms';
 	import { superForm } from 'sveltekit-superforms';
+	import SuperDebug from 'sveltekit-superforms';
 	import type { CustomizeSchema } from '$lib/schemas/customize';
 
-	let { data = $bindable() }: { data: SuperValidated<Infer<CustomizeSchema>> } = $props();
+	let { data }: { data: SuperValidated<Infer<CustomizeSchema>> } = $props();
 
-	const { form, constraints, errors, enhance, message } = superForm(data, {
+	let { form, constraints, errors, enhance, message } = superForm(data, {
+		dataType: 'json',
 		onSubmit: () => {
 			toast.loading('Attempting login...');
 		}
 	});
+
+	let tags = $state([])
+
+	$inspect($form.tags)
 </script>
 
-<form method="POST">
+<form method="POST" use:enhance>
 	<Card.Root>
 		<Card.Header>
 			<Card.Title>Customize Chat Experience</Card.Title>
 		</Card.Header>
 		<Card.Content class="space-y-6">
+			<SuperDebug data={$form} />
 			{#if $message}
 				<Alert.Root>
 					<Info class="h-4 w-4" />
@@ -48,10 +55,11 @@
 				</Alert.Root>
 			{/if}
 			<div class="space-y-2">
-				<Label for="chat-name">What should the assistant call you?</Label>
+				<Label for="nickname">What should the assistant call you?</Label>
 				<div class="relative">
 					<Input
-						id="chat-name"
+						id="nickname"
+						name="nickname"
 						placeholder="Enter your name"
 						class="pr-12"
 						aria-invalid={$errors.nickname ? 'true' : undefined}
@@ -69,6 +77,7 @@
 				<div class="relative">
 					<Input
 						id="occupation"
+						name="occupation"
 						placeholder="Engineer, student, etc."
 						class="pr-16"
 						aria-invalid={$errors.occupation ? 'true' : undefined}
@@ -89,6 +98,7 @@
 				<div class="relative">
 					<TagsInput
 						id="traits"
+						name="traits"
 						placeholder="Type a trait and press Enter or Tab..."
 						class="pr-12"
 						aria-invalid={$errors.traits ? 'true' : undefined}
@@ -101,7 +111,7 @@
 				</div>
 				<div class="flex flex-wrap gap-2">
 					{#each exampleTraits as trait}
-						<button onclick={() => $form.traits?.push(trait)}>
+						<button type="button" onclick={() => $form.traits?.push(trait)}>
 							<Badge variant="secondary" class="flex items-center gap-1">
 								{trait}
 								<Button variant="ghost" size="sm" class="h-4 w-4 p-0 hover:bg-transparent">
@@ -114,10 +124,11 @@
 			</div>
 
 			<div class="space-y-2">
-				<Label for="additional-info">Anything else the assistant should know about you?</Label>
+				<Label for="additionalInfo">Anything else the assistant should know about you?</Label>
 				<div class="relative">
 					<Textarea
-						id="additional-info"
+						id="additionalInfo"
+						name="additionalInfo"
 						placeholder="Interests, values, or preferences to keep in mind"
 						rows={4}
 						class="resize-none"

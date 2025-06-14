@@ -18,6 +18,7 @@
 	setupConvex(PUBLIC_CONVEX_URL);
 
 	let sidebarOpen = $state(true);
+	$inspect(sidebarOpen)
 </script>
 
 <Sidebar.Provider bind:open={sidebarOpen}>
