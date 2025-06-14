@@ -10,14 +10,16 @@ COPY . .
 RUN npm run generate
 RUN npx convex deploy --cmd='npm run build'
 RUN npm prune --production
-RUN ls
+
+# Read the .env (e.g., echo a value)
+RUN export $(grep -v '^#' .env | xargs) && \
+    echo "Value of API_KEY: $API_KEY"
 
 FROM node:20 AS run
 
 ENV NODE_ENV=production
 
 WORKDIR /app
-RUN ls
 COPY --from=build /app/build ./build
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/node_modules ./node_modules
