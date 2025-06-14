@@ -7,7 +7,7 @@ COPY package*.json .
 RUN npm ci --ignore-scripts
 
 COPY . .
-RUN npm run postinstall
+
 RUN npx convex deploy --cmd='npm run build'
 RUN npm prune --production
 
