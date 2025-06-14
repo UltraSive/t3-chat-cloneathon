@@ -79,3 +79,45 @@ export const models = pgTable('models', {
 
 export type Model = InferSelectModel<typeof models>;
 export type NewModel = InferInsertModel<typeof models>;
+
+export const modelsRelations = relations(models, ({ many }) => ({
+  tools: many(modelsTools),
+}));
+
+// Tools table
+export const tools = pgTable('tools', {
+  id: varchar('id', { length: 255 }).primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+});
+
+export type Tool = InferSelectModel<typeof tools>;
+export type NewTool = InferInsertModel<typeof tools>;
+
+export const toolsRelations = relations(tools, ({ many }) => ({
+  models: many(modelsTools),
+}));
+
+// Models and Tools Junction table
+export const modelsTools = pgTable('models_tools', {
+  modelId: varchar('model_id', { length: 255 }).notNull().references(() => models.id),
+  toolId: varchar('tool_id', { length: 255 }).notNull().references(() => tools.id),
+}, (table) => {
+  return {
+    pk: primaryKey({ columns: [table.modelId, table.toolId] }),
+  };
+});
+
+export type ModelsTools = InferSelectModel<typeof modelsTools>;
+export type NewModelsTools = InferInsertModel<typeof modelsTools>;
+
+export const modelsToolsRelations = relations(modelsTools, ({ one }) => ({
+  model: one(models, {
+    fields: [modelsTools.modelId],
+    references: [models.id],
+  }),
+  tool: one(tools, {
+    fields: [modelsTools.toolId],
+    references: [tools.id],
+  }),
+}));

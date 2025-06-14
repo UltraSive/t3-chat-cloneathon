@@ -1,0 +1,3 @@
+ALTER TABLE "models_tools" ADD CONSTRAINT "models_tools_model_id_tool_id_pk" PRIMARY KEY("model_id","tool_id");--> statement-breakpoint
+ALTER TABLE "models_tools" ADD CONSTRAINT "models_tools_model_id_models_id_fk" FOREIGN KEY ("model_id") REFERENCES "public"."models"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "models_tools" ADD CONSTRAINT "models_tools_tool_id_tools_id_fk" FOREIGN KEY ("tool_id") REFERENCES "public"."tools"("id") ON DELETE no action ON UPDATE no action;

@@ -51,14 +51,14 @@
 	let hoveredMessageId: string | null = $state(null);
 
 	const copyToClipboard = async (text: string) => {
-    try {
-        await navigator.clipboard.writeText(text);
-        // Optionally, provide feedback to the user
-        toast.success('Copied to clipboard!');
-    } catch (err) {
-        toast.error(`Failed to copy: ${err}`);
-    }
-};
+		try {
+			await navigator.clipboard.writeText(text);
+			// Optionally, provide feedback to the user
+			toast.success('Copied to clipboard!');
+		} catch (err) {
+			toast.error(`Failed to copy: ${err}`);
+		}
+	};
 
 	let { data }: PageProps = $props();
 	const { user, models } = data;
@@ -128,13 +128,15 @@
 							</div>
 						</div>
 						<div
-							class="mb-2 px-4 space-x-0.5 transition-opacity duration-200"
+							class="mb-2 space-x-0.5 px-4 transition-opacity duration-200"
 							class:text-right={isUser}
-							class:opacity-100={hoveredMessageId === message._id && message.status === "finished"}
+							class:opacity-100={hoveredMessageId === message._id && message.status === 'finished'}
 							class:opacity-0={hoveredMessageId !== message._id}
 							class:pointer-events-none={hoveredMessageId !== message._id}
 						>
-							<Button variant="ghost" size="sm" onclick={() => copyToClipboard(message.content)}><Copy class="h-3 w-3" /></Button>
+							<Button variant="ghost" size="sm" onclick={() => copyToClipboard(message.content)}
+								><Copy class="h-3 w-3" /></Button
+							>
 							<Button variant="ghost" size="sm"><RotateCcw class="h-3 w-3" /></Button>
 						</div>
 					</div>
@@ -142,8 +144,9 @@
 			{/if}
 		</div>
 	</ScrollArea>
-	<div class="bg-background/70 sticky bottom-2 mx-4 backdrop-blur-md">
-		<!--<ScrollDownButton bind:isAtBottom={isAtBottom} {scrollToBottom} />-->
-		<MessageInput bind:model {models} thread={page.params.thread} bind:processing />
+
+	<!--<ScrollDownButton bind:isAtBottom={isAtBottom} {scrollToBottom} />-->
+	<div class="sticky bottom-2 mx-4">
+		<MessageInput {user} bind:model {models} thread={page.params.thread} bind:processing />
 	</div>
 </div>

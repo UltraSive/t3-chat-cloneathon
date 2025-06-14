@@ -31,7 +31,7 @@
 	</div>
 	{#if user}
 		<div class="bg-background/70 sticky bottom-2 mx-4 backdrop-blur-md">
-			<MessageInput bind:model {models} />
+			<MessageInput {user} bind:model {models} />
 		</div>
 	{/if}
 </div>

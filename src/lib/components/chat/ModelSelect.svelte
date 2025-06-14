@@ -4,14 +4,16 @@
 	import * as Select from '$lib/components/ui/select';
 </script>
 
-<Select.Root type="single" bind:value={selected}>
-	<Select.Trigger class="w-[180px]">
-		{@const model = models.find((model) => model.id === selected)}
-		{model.name}
-	</Select.Trigger>
-	<Select.Content>
-		{#each models as model}
-			<Select.Item value={model.id}>{model.name}</Select.Item>
-		{/each}
-	</Select.Content>
-</Select.Root>
+{#if models && models.length > 0}
+	<Select.Root type="single" bind:value={selected}>
+		<Select.Trigger class="w-[180px] bg-muted">
+			{@const model = models.find((model) => model.id === selected)}
+			{model.name}
+		</Select.Trigger>
+		<Select.Content>
+			{#each models as model}
+				<Select.Item value={model.id}>{model.name}</Select.Item>
+			{/each}
+		</Select.Content>
+	</Select.Root>
+{/if}
