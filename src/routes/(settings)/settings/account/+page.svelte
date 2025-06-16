@@ -77,5 +77,5 @@
 			not available.
 		</p>
 	</div>
-	<Customize data={data.form} />
+	<Customize data={data.form} traits={user.traits ? user.traits : []} />
 </div>

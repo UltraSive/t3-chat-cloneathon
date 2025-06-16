@@ -27,13 +27,39 @@
 	import SuperDebug from 'sveltekit-superforms';
 	import type { CustomizeSchema } from '$lib/schemas/customize';
 
-	let { data }: { data: SuperValidated<Infer<CustomizeSchema>> } = $props();
+	let { data, traits = [] }: { data: SuperValidated<Infer<CustomizeSchema>> } = $props();
 
-	let { form, constraints, errors, enhance, message } = superForm(data, {
+	let tags = $state(traits)
+
+	let { form, constraints, errors, enhance, message, isTainted  } = superForm(data, {
+		clearOnSubmit: 'none',
 		dataType: 'json',
-		onSubmit: () => {
-			toast.loading('Attempting login...');
-		}
+		onSubmit: ({ jsonData }) => {
+			toast.loading('Attempting customization...');
+			console.log($form)
+			$form.traits = tags
+			// Set data to be posted
+			jsonData($form);
+		},
+		onResult({ result }) {
+			switch (result.type) {
+				case 'success':
+					toast.success(result.data?.form?.message ?? 'Success!');
+					break;
+
+				case 'error':
+					toast.error(result.message ?? 'An error occurred.');
+					break;
+
+				case 'failure':
+					toast.warning(result.message ?? 'Form submission failed.');
+					break;
+
+				default:
+					toast.info('Unknown result type.');
+					break;
+			}
+  	}
 	});
 </script>
 
@@ -43,7 +69,7 @@
 			<Card.Title>Customize Chat Experience</Card.Title>
 		</Card.Header>
 		<Card.Content class="space-y-6">
-			<!--<SuperDebug data={$form} />-->
+			<SuperDebug data={$form} />
 			{#if $message}
 				<Alert.Root>
 					<Info class="h-4 w-4" />
@@ -98,13 +124,14 @@
 						placeholder="Type a trait and press Enter or Tab..."
 						class="pr-12"
 						aria-invalid={$errors.traits ? 'true' : undefined}
-						bind:value={$form.traits}
+						bind:value={tags}
 						{...$constraints.traits}
 					/>
 					<span class="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2 text-xs">
 						{$form.traits?.length}/50
 					</span>
 				</div>
+				<!--
 				<div class="flex flex-wrap gap-2">
 					{#each exampleTraits as trait}
 						<button type="button" onclick={() => $form.traits?.push(trait)}>
@@ -117,6 +144,7 @@
 						</button>
 					{/each}
 				</div>
+				-->
 			</div>
 
 			<div class="space-y-2">
@@ -137,7 +165,7 @@
 			</div>
 
 			<div class="flex justify-end">
-				<Button>Save Preferences</Button>
+				<Button type="submit">Save Preferences</Button>
 			</div>
 		</Card.Content>
 	</Card.Root>

@@ -26,8 +26,12 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 export const actions = {
   default: async ({ locals, request }) => {
     const { user } = locals;
+    console.log("form")
 
     const form = await superValidate(request, zod(customizeSchema));
+
+    console.log(form.data);
+    console.log("Valid: ", form.valid)
 
     if (!form.valid) return fail(400, { form });
 
