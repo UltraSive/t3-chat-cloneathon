@@ -104,3 +104,35 @@ export const getMessagesFromThread = query({
     return messages;
   },
 });
+
+export const getFinishedMessagesFromThread = query({
+  args: {
+    thread: v.string(),
+    user: v.string()
+  },
+  handler: async (ctx, { thread, user }) => {
+    const threadId = thread as Id<'threads'>;
+
+    // Step 1: Get the thread
+    const result = await ctx.db.get(threadId);
+    if (!result) {
+      throw new Error("Thread not found");
+    }
+
+    // Step 2: Check if thread belongs to the user
+    if (result.user !== user) {
+      throw new Error("Unauthorized access to thread");
+    }
+
+    // Step 3: Get the finished messages
+    const messages = await ctx.db
+      .query("messages")
+      .withIndex("by_thread_status_createdAt", (q) =>
+        q.eq("thread", threadId).eq("status", "finished")
+      )
+      .order("asc")
+      .collect();
+
+    return messages;
+  },
+});

@@ -9,32 +9,32 @@ import { api } from '$convex/_generated/api.js';
 import { OPENROUTER_API_KEY } from '$env/static/private';
 
 function createSystemPrompt(nickname: string, occupation: string, traits: string[], additionalInfo: string) {
-    let prompt = "You are an assistant with the following preferences:\n";
+  let prompt = "You are an assistant with the following preferences:\n";
 
-    if (nickname) {
-        prompt += `- User prefers to be called "${nickname}".\n`;
-    }
+  if (nickname) {
+    prompt += `- User prefers to be called "${nickname}".\n`;
+  }
 
-    if (occupation) {
-        prompt += `- User is an "${occupation}".\n`;
-    }
+  if (occupation) {
+    prompt += `- User is an "${occupation}".\n`;
+  }
 
-    if (traits && traits.length > 0) {
-        prompt += `- User wants you to exhibit the following traits: ${traits.join(", ")}.\n`;
-    }
+  if (traits && traits.length > 0) {
+    prompt += `- User wants you to exhibit the following traits: ${traits.join(", ")}.\n`;
+  }
 
-    if (additionalInfo) {
-        prompt += `- Additional information: ${additionalInfo}.\n`;
-    }
+  if (additionalInfo) {
+    prompt += `- Additional information: ${additionalInfo}.\n`;
+  }
 
-    if (!nickname && !occupation && !traits.length &&
-        !additionalInfo) {
-        prompt += "There are no specific preferences provided.\n";
-    }
+  if (!nickname && !occupation && !traits.length &&
+    !additionalInfo) {
+    prompt += "There are no specific preferences provided.\n";
+  }
 
-    prompt += "Please assist the user accordingly.";
+  prompt += "Please assist the user accordingly.";
 
-    return prompt;
+  return prompt;
 }
 
 interface Message {
@@ -156,7 +156,8 @@ const chatSchema = z.object({
   thread: z.optional(z.string()),
   modify: z.optional(z.string()), // Used to edit a message or retry (if you use the same message)
   model: z.string(),
-  message: z.string()
+  message: z.string(),
+  search: z.optional(z.boolean())
 });
 
 export const POST: RequestHandler = async ({ request, locals }) => {
@@ -177,6 +178,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   const { thread, model, message } = data;
 
   let referencedThread;
+  let formattedHistory: Message[] = [];
 
   if (thread) {
     const [threadErr, threadQuery] = await catchError(convexClient.query(api.threads.getThread, {
@@ -192,6 +194,18 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     }
 
     referencedThread = threadQuery._id;
+
+    const [historyErr, historyQuery] = await catchError(convexClient.query(api.messages.getFinishedMessagesFromThread, {
+      thread: referencedThread,
+      user: user.id,
+    }));
+
+    if (!historyErr) {
+      formattedHistory = (historyQuery ?? []).map(({ role, content }) => ({
+        role,
+        content
+      }));
+    }
   } else {
     const [threadErr, threadMutation] = await catchError(convexClient.mutation(api.threads.createUserThread, {
       user: user.id,
@@ -232,10 +246,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       role: "system",
       content: createSystemPrompt(user.nickname, user.occupation, user.traits, user.additionalInfo)
     },
+    ...formattedHistory ?? [],
     {
       role: "user",
       content: message
-    }];
+    }
+  ];
+
+  console.log(messages);
 
   processRelay(model, messages, assistantMutation);
 
