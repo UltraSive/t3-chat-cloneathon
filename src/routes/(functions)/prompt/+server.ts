@@ -8,6 +8,35 @@ import { api } from '$convex/_generated/api.js';
 
 import { OPENROUTER_API_KEY } from '$env/static/private';
 
+function createSystemPrompt(nickname: string, occupation: string, traits: string[], additionalInfo: string) {
+    let prompt = "You are an assistant with the following preferences:\n";
+
+    if (nickname) {
+        prompt += `- User prefers to be called "${nickname}".\n`;
+    }
+
+    if (occupation) {
+        prompt += `- User is an "${occupation}".\n`;
+    }
+
+    if (traits && traits.length > 0) {
+        prompt += `- User wants you to exhibit the following traits: ${traits.join(", ")}.\n`;
+    }
+
+    if (additionalInfo) {
+        prompt += `- Additional information: ${additionalInfo}.\n`;
+    }
+
+    if (!nickname && !occupation && !traits.length &&
+        !additionalInfo) {
+        prompt += "There are no specific preferences provided.\n";
+    }
+
+    prompt += "Please assist the user accordingly.";
+
+    return prompt;
+}
+
 interface Message {
   role: string;
   content: string;
@@ -198,10 +227,15 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     return json({ success: false, message: "Assistants message couldn't be created." }, { status: 400 });
   }
 
-  const messages = [{
-    role: "user",
-    content: message
-  }];
+  const messages = [
+    {
+      role: "system",
+      content: createSystemPrompt(user.nickname, user.occupation, user.traits, user.additionalInfo)
+    },
+    {
+      role: "user",
+      content: message
+    }];
 
   processRelay(model, messages, assistantMutation);
 

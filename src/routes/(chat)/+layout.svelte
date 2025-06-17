@@ -25,7 +25,7 @@
 	<AppSidebar {user} />
 	<main class="w-full">
 		<div
-			class="sticky top-1 left-1 z-10 w-fit"
+			class="sticky top-1 left-1 z-1 m-1 w-fit"
 			in:fade={{ delay: 250 }}
 			out:fade={{ duration: 50 }}
 		>
