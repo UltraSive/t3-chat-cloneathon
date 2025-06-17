@@ -26,8 +26,6 @@
 	<main class="w-full">
 		<div
 			class="sticky top-1 left-1 z-1 m-1 w-fit"
-			in:fade={{ delay: 250 }}
-			out:fade={{ duration: 50 }}
 		>
 			<div class="bg-muted/50 flex items-center space-x-1 rounded p-1">
 				<Sidebar.Trigger />

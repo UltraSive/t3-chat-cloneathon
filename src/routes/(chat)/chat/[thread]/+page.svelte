@@ -16,7 +16,7 @@
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { Button } from '$lib/components/ui/button';
 
-	import { User, Bot, Copy, RotateCcw } from 'lucide-svelte';
+	import { User, Bot, Copy, RotateCcw, Split, Pencil } from 'lucide-svelte';
 
 	import type { PageProps } from './$types';
 
@@ -129,7 +129,7 @@
 						</div>
 						<div
 							class="mb-2 space-x-0.5 px-4 transition-opacity duration-200"
-							class:text-right={isUser}
+							class:text-right={!isUser}
 							class:opacity-100={hoveredMessageId === message._id && message.status === 'finished'}
 							class:opacity-0={hoveredMessageId !== message._id}
 							class:pointer-events-none={hoveredMessageId !== message._id}
@@ -138,6 +138,11 @@
 								><Copy class="h-3 w-3" /></Button
 							>
 							<Button variant="ghost" size="sm"><RotateCcw class="h-3 w-3" /></Button>
+							{#if !isUser}
+								<Button variant="ghost" size="sm"><Split class="h-3 w-3" /></Button>
+							{:else}
+								<Button variant="ghost" size="sm"><Pencil class="h-3 w-3" /></Button>
+							{/if}
 						</div>
 					</div>
 				{/each}
