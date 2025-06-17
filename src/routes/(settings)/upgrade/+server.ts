@@ -6,7 +6,7 @@ import { stripe, ensureStripeCustomerId } from "$lib/server/stripe"
 export const GET: RequestHandler = async ({ locals, url }) => {
   const { user } = locals;
 
-  if (!user) {
+  if (!user || user.stripeSubscriptionId) {
     throw redirect(302, "/");
   }
 
