@@ -23,6 +23,7 @@
 
 <Sidebar.Root>
 	<Sidebar.Header>
+		<NavMain items={data.navMain} />
 		<SearchForm />
 	</Sidebar.Header>
 	<Sidebar.Content>
