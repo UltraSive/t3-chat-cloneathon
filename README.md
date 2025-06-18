@@ -1,38 +1,39 @@
-# sv
-
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
-
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+## env variables
+```
+ORIGIN=http://localhost:5173
+DATABASE_URL=postgres://
+OPENROUTER_API_KEY=sk-or-v1-
+CONVEX_DEPLOYMENT=dev:
+PUBLIC_CONVEX_URL=https://project-id.convex.cloud
+GOOGLE_OAUTH_CLIENT_ID=.apps.googleusercontent.com
+GOOGLE_OAUTH_CLIENT_SECRET=GOCSPX-
+PUBLIC_STRIPE_KEY=pk_test_
+PRIVATE_STRIPE_KEY=sk_test_
+PRIVATE_STRIPE_WEBHOOK_SECRET=whsec_
+PUBLIC_STRIPE_PRICE_ID=price_
 ```
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+## Build Instructions
+1. Set the environment variables to the configuration for your services.
+2. Install dependancies.
+```
+npm install
+```
+3. Initialize postgres database.
+```
+npm run generate && npm run migrate
+```
+4. Initialize convex document schema.
+```
+npx convex dev
+```
+5. Build it
+```
+npm run build.
 ```
 
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
+## Run Instructions
+1. Run the build.
 ```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+node build
+```
