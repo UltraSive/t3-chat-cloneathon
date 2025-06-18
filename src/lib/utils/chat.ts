@@ -27,3 +27,30 @@ export async function branchThread(thread: string, message: string) {
 
   goto(`/chat/${res.branched}`);
 }
+
+export async function modifyMessage(thread: string, model: string, modify: string, message: string) {
+  toast.loading("Attempting to requery thread...");
+
+  const response = await fetch('/prompt', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      thread,
+      model,
+      message,
+      modify
+    })
+  });
+
+  const res = await response.json();
+
+  if (!response.ok) {
+    toast.error(res.message);
+    return;
+  }
+
+  toast.success("Thread has been requeried successfully");
+}

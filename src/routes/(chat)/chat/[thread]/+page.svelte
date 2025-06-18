@@ -12,7 +12,7 @@
 	import LoadError from '$lib/components/chat/LoadError.svelte';
 	import ScrollDownButton from '$lib/components/chat/ScrollDownButton.svelte';
 
-	import { branchThread } from "$lib/utils/chat";
+	import { branchThread, modifyMessage } from '$lib/utils/chat';
 
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import { Skeleton } from '$lib/components/ui/skeleton';
@@ -96,64 +96,84 @@
 			{:else if query.error}
 				<LoadError error={query.error.toString()} />
 			{:else}
-				{#each query.data.messages as message}
-					{@const isUser = message.role === 'user'}
-					<div
-						role="group"
-						onmouseenter={() => (hoveredMessageId = message._id)}
-						onmouseleave={() => (hoveredMessageId = null)}
-					>
+				{#each query.data.messages as message, i}
+					{#if message.status !== 'archived'}
+						{@const isUser = message.role === 'user'}
 						<div
-							class="mb-2 flex gap-4 rounded-lg p-4"
-							class:flex-row-reverse={isUser}
-							class:bg-muted={isUser}
+							role="group"
+							onmouseenter={() => (hoveredMessageId = message._id)}
+							onmouseleave={() => (hoveredMessageId = null)}
 						>
 							<div
-								class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md select-none"
-								class:bg-primary={isUser}
-								class:bg-muted={!isUser}
+								class="mb-2 flex gap-4 rounded-lg p-4"
+								class:flex-row-reverse={isUser}
+								class:bg-muted={isUser}
 							>
-								{#if isUser}
-									<User class="h-4 w-4 text-white" />
-								{:else}
-									<Bot class="text-foreground h-4 w-4" />
-								{/if}
-							</div>
-
-							<div class="flex-1 space-y-2 overflow-hidden px-1">
-								<div class="font-semibold" class:text-right={isUser}>
-									{isUser ? 'You' : 'Assistant'}
-								</div>
-								{#if message.role === 'user'}
-									<div class="whitespace-pre-wrap">{message.content}</div>
-								{:else if message.role === 'assistant'}
-									{#if message.content === '' && message.status === 'processing'}
-										<Skeleton class="h-4 w-full" />
-										<Skeleton class="h-4 w-3/4" />
+								<div
+									class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md select-none"
+									class:bg-primary={isUser}
+									class:bg-muted={!isUser}
+								>
+									{#if isUser}
+										<User class="h-4 w-4 text-white" />
 									{:else}
-										<MarkdownRenderer bind:content={message.content} />
+										<Bot class="text-foreground h-4 w-4" />
 									{/if}
+								</div>
+
+								<div class="flex-1 space-y-2 overflow-hidden px-1">
+									<div class="font-semibold" class:text-right={isUser}>
+										{isUser ? 'You' : 'Assistant'}
+									</div>
+									{#if message.role === 'user'}
+										<div class="whitespace-pre-wrap">{message.content}</div>
+									{:else if message.role === 'assistant'}
+										{#if message.content === '' && message.status === 'processing'}
+											<Skeleton class="h-4 w-full" />
+											<Skeleton class="h-4 w-3/4" />
+										{:else}
+											<MarkdownRenderer bind:content={message.content} />
+										{/if}
+									{/if}
+								</div>
+							</div>
+							<div
+								class="mb-2 space-x-0.5 px-4 transition-opacity duration-200"
+								class:text-right={!isUser}
+								class:opacity-100={hoveredMessageId === message._id &&
+									message.status === 'finished'}
+								class:opacity-0={hoveredMessageId !== message._id}
+								class:pointer-events-none={hoveredMessageId !== message._id}
+							>
+								<Button variant="ghost" size="sm" onclick={() => copyToClipboard(message.content)}
+									><Copy class="h-3 w-3" /></Button
+								>
+								<Button
+									variant="ghost"
+									size="sm"
+									onclick={() =>
+										modifyMessage(
+											query.data.thread._id,
+											message.model,
+											message.role === 'assistant' ? query.data.messages[i - 1]._id : message._id,
+											message.role === 'assistant'
+												? query.data.messages[i - 1].content
+												: message.content
+										)}><RotateCcw class="h-3 w-3" /></Button
+								>
+								{#if !isUser}
+									<Button
+										variant="ghost"
+										size="sm"
+										onclick={() => branchThread(query.data.thread._id, message._id)}
+										><Split class="h-3 w-3" /></Button
+									>
+								{:else}
+									<Button variant="ghost" size="sm"><Pencil class="h-3 w-3" /></Button>
 								{/if}
 							</div>
 						</div>
-						<div
-							class="mb-2 space-x-0.5 px-4 transition-opacity duration-200"
-							class:text-right={!isUser}
-							class:opacity-100={hoveredMessageId === message._id && message.status === 'finished'}
-							class:opacity-0={hoveredMessageId !== message._id}
-							class:pointer-events-none={hoveredMessageId !== message._id}
-						>
-							<Button variant="ghost" size="sm" onclick={() => copyToClipboard(message.content)}
-								><Copy class="h-3 w-3" /></Button
-							>
-							<Button variant="ghost" size="sm"><RotateCcw class="h-3 w-3" /></Button>
-							{#if !isUser}
-								<Button variant="ghost" size="sm" onclick={() => branchThread(query.data.thread._id, message._id)}><Split class="h-3 w-3" /></Button>
-							{:else}
-								<Button variant="ghost" size="sm"><Pencil class="h-3 w-3" /></Button>
-							{/if}
-						</div>
-					</div>
+					{/if}
 				{/each}
 			{/if}
 		</div>

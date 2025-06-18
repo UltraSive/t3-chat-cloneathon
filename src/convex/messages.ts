@@ -79,10 +79,12 @@ export const updateMessage = mutation({
 
 export const modifyMessage = mutation({
   args: {
-    messageId: v.id("messages"),
+    message: v.string(),
     newContent: v.string(),
   },
-  handler: async (ctx, { messageId, newContent }) => {
+  handler: async (ctx, { message, newContent }) => {
+    const messageId = message as Id<'messages'>;
+
     // 1. Validate and fetch the original message
     const originalMessage = await ctx.db.get(messageId);
     if (!originalMessage) {
@@ -95,7 +97,6 @@ export const modifyMessage = mutation({
     // 2. Update the original message's content
     await ctx.db.patch(messageId, {
       content: newContent,
-      updatedAt: now, // Optionally update the timestamp
     });
 
     // 3. Fetch and update subsequent messages
@@ -106,10 +107,12 @@ export const modifyMessage = mutation({
       )
       .collect();
 
+      console.log(subsequentMessages)
+
     // 4. Update status of subsequent messages to "archived"
     if (subsequentMessages.length > 0) {
       const updatePromises = subsequentMessages.map((msg) =>
-        ctx.db.patch(msg.id, {
+        ctx.db.patch(msg._id, {
           status: "archived",
         })
       );
