@@ -16,6 +16,7 @@ export const GET: RequestHandler = async ({ locals, url }) => {
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: stripeCustomerId!,
+    allow_promotion_codes: true,
     line_items: [{ price: PUBLIC_STRIPE_PRICE_ID, quantity: 1 }],
     success_url: `${url.origin}`,
     cancel_url: `${url.origin}/settings/account`
