@@ -124,8 +124,8 @@ export const getFinishedMessagesFromThread = query({
       throw new Error("Unauthorized access to thread");
     }
 
-    // Step 3: Get the finished messages
-    const messages = await ctx.db
+    // Step 3: Get messages for each status
+    const finishedMessages = await ctx.db
       .query("messages")
       .withIndex("by_thread_status_createdAt", (q) =>
         q.eq("thread", threadId).eq("status", "finished")
@@ -133,7 +133,39 @@ export const getFinishedMessagesFromThread = query({
       .order("asc")
       .collect();
 
-    return messages;
+    const branchedMessages = await ctx.db
+      .query("messages")
+      .withIndex("by_thread_status_createdAt", (q) =>
+        q.eq("thread", threadId).eq("status", "branched")
+      )
+      .order("asc")
+      .collect();
+
+    const sharedMessages = await ctx.db
+      .query("messages")
+      .withIndex("by_thread_status_createdAt", (q) =>
+        q.eq("thread", threadId).eq("status", "shared")
+      )
+      .order("asc")
+      .collect();
+
+    // Combine the messages
+    const combinedMessages = [...finishedMessages, ...branchedMessages, ...sharedMessages];
+
+    // Sort based on createdAt safely
+    const sortedMessages = combinedMessages.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+
+      // Ensure both dates are valid before subtracting
+      if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+        return 0; // Handle invalid date cases
+      }
+
+      return dateA.getTime() - dateB.getTime(); // Sort ascending based on createdAt
+    });
+
+    return sortedMessages;
   },
 });
 

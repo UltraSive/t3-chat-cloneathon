@@ -29,9 +29,11 @@ export default defineSchema({
       v.literal("processing"),
       v.literal("failed"),
       v.literal("archived"),
+      v.literal("branched"),
       v.literal("shared")
     ),
     model: v.optional(v.string()),
+    token: v.optional(v.string()),
     premium: v.optional(v.boolean()),
     user: v.string(),
     thread: v.id("threads"),

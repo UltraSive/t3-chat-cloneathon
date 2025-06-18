@@ -76,6 +76,13 @@
 		return query.data?.messages?.some((m) => m.status === 'processing') ?? false;
 	});
 
+	const countQuery = $derived(
+		useQuery(api.messages.getAssistantMessageCounts, {
+			user: user.id,
+			anchorDate: user.createdAt
+		})
+	);
+
 	//let messages = $derived(query?.data?.messages);
 </script>
 

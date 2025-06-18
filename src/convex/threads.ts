@@ -109,3 +109,92 @@ export const getUserThreadWithMessages = query({
     return { thread: result, messages };
   },
 });
+
+export const branchThread = mutation({
+  args: {
+    thread: v.string(),
+    message: v.string(),
+  },
+  handler: async (ctx, { thread, message }) => {
+    const parentThreadId = thread as Id<'threads'>;
+    const branchFromMessageId = message as Id<'messages'>;
+    
+    // 1. Validate inputs and fetch necessary data
+    const parentThread = await ctx.db.get(parentThreadId);
+    if (!parentThread) {
+      throw new Error(`Parent thread with ID ${parentThreadId} not found.`);
+    }
+
+    const branchFromMessage = await ctx.db.get(branchFromMessageId);
+    if (!branchFromMessage) {
+      throw new Error(`Branch from message with ID ${branchFromMessageId} not found.`);
+    }
+
+    // Ensure the message belongs to the parent thread
+    if (branchFromMessage.thread !== parentThreadId) {
+      throw new Error(`Message ID ${branchFromMessageId} does not belong to thread ID ${parentThreadId}.`);
+    }
+
+    const now = new Date().toISOString();
+
+    // 2. Create the new branched thread
+    const newThreadId = await ctx.db.insert("threads", {
+      description: `Branch from thread ${parentThread.description ? `'${parentThread.description}'` : parentThreadId}`,
+      createdAt: now,
+      updatedAt: now,
+      lastMessageAt: now,
+      status: "processing", // Or "branched" if you prefer the new thread to start with that specific status
+      parentThread: parentThreadId,
+      user: parentThread.user, // Inherit user from parent thread
+    });
+
+    // 3. Clone messages from the parent thread up to the branchFromMessage (exclusive)
+    // We need to fetch messages ordered by createdAt to ensure we get them in the correct sequence.
+    // The 'by_thread' index (thread, createdAt) is perfect for this.
+    const messagesToClone = await ctx.db
+      .query("messages")
+      .withIndex("by_thread", (q) =>
+        q.eq("thread", parentThreadId) // Filter by the parent thread
+      )
+      .order("asc") // Order by createdAt
+      .collect();
+
+    // Filter messages that occurred strictly before the branchFromMessage
+    const messagesBeforeBranchPoint = messagesToClone.filter(
+      (msg) => new Date(msg.createdAt).getTime() < new Date(branchFromMessage.createdAt).getTime()
+    );
+
+    if (messagesBeforeBranchPoint.length > 0) {
+        // Use Promise.all to insert messages in parallel for efficiency
+        const insertPromises = messagesBeforeBranchPoint.map((msg) =>
+            ctx.db.insert("messages", {
+                // Keep relevant fields, but set new thread ID and fresh timestamps
+                content: msg.content,
+                createdAt: msg.createdAt, // Keep original creation time for historical accuracy within the new thread
+                role: msg.role,
+                status: msg.status, // Keep original status unless specified otherwise
+                model: msg.model,
+                token: msg.token,
+                premium: msg.premium,
+                user: msg.user,
+                thread: newThreadId, // Assign to the new thread
+            })
+        );
+        await Promise.all(insertPromises);
+    }
+
+    // 4. Update the status of the branchFromMessage in the parent thread
+    await ctx.db.patch(branchFromMessageId, {
+      status: "branched",
+    });
+
+    // Optionally, you might want to update the parent thread's status
+    // For example, if branching means it's no longer actively "processing" in the same way.
+    // await ctx.db.patch(parentThreadId, {
+    //   status: "branched", // Or "finished" if no further activity is expected on the parent path
+    //   updatedAt: now,
+    // });
+
+    return { newThreadId, parentThreadId, branchedMessageId: branchFromMessageId };
+  },
+});

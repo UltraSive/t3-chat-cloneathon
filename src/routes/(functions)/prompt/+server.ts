@@ -185,7 +185,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
   const [countErr, countQuery] = await catchError(convexClient.query(api.messages.getAssistantMessageCounts, {
     user: user.id,
-    anchorDate: user.createdAt.getTime()
+    anchorDate: user.stripeSubscriptionId ? user.subscribedAt.getTime() : user.createdAt.getTime()
   }));
 
   if (countErr) {
@@ -198,7 +198,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       return json({ success: false, message: "Message limit exceeded" }, { status: 400 });
     }
   } else {
-    if (countQuery.totalCount > 10) {
+    if (countQuery.totalCount > 30) {
       return json({ success: false, message: "Message limit exceeded" }, { status: 400 });
     }
   }

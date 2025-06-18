@@ -1,19 +1,29 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 
-	import { toast } from "svelte-sonner";
+	import { toast } from 'svelte-sonner';
+	import { useQuery } from 'convex-svelte';
+	import { api } from '$convex/_generated/api.js';
 
 	import { preventDefault } from '$lib/modifiers';
 
-	let { user, thread, models, model = $bindable(), processing = $bindable() } = $props();
+	let {
+		user,
+		thread,
+		models,
+		model = $bindable(),
+		processing = $bindable(),
+		count = $bindable()
+	} = $props();
 
 	import ModelSelect from './ModelSelect.svelte';
 
 	import { Button } from '$lib/components/ui/button';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Toggle } from '$lib/components/ui/toggle';
+	import * as Alert from '$lib/components/ui/alert';
 
-	import { Send, Paperclip, Search, SearchCheck } from 'lucide-svelte';
+	import { Send, Paperclip, Search, SearchCheck, CircleAlertIcon, ExternalLink } from 'lucide-svelte';
 
 	let text = $state('');
 	let selectedModel = $derived(models.find((m) => m.id === model));
@@ -67,11 +77,40 @@
 			}
 		}
 	}
+
+	const countQuery = $derived(
+		useQuery(api.messages.getAssistantMessageCounts, {
+			user: user.id,
+			anchorDate: user.stripeSubscriptionId ? user.subscribedAt.getTime() : user.createdAt.getTime()
+		})
+	);
 </script>
 
 <form method="POST" class="mx-auto flex max-w-3xl flex-col" onsubmit={preventDefault(submitPrompt)}>
 	<div class="relative">
-		<div class=" mb-2 flex justify-end">
+		<div class="mb-2 flex justify-center">
+			{#if countQuery.isLoading}{:else if countQuery.error}{:else}
+				{@const totalCount = countQuery.data.totalCount}
+				{@const premiumCount = countQuery.data.premiumCount}
+				{@const messagesAllowed = user.stripeSubscriptionId ? 1500 : 30}
+				{@const messagesLeft = messagesAllowed - totalCount}
+				{#if messagesLeft < 10}
+					<Alert.Root variant="destructive" class="bg-muted/50 backdrop-blur-md">
+						<CircleAlertIcon class="size-4" />
+						<Alert.Title>Running low on messages</Alert.Title>
+						<Alert.Description
+							><span
+								>You have {messagesLeft} messages left.
+								{#if !user.stripeSubscriptionId}
+									<a href="/upgrade" class="underline flex items-center"> Upgrade <ExternalLink class="ml-1 w-3 h-3"/></a> to unlock more.
+								{:else}{/if}</span
+							>
+						</Alert.Description>
+					</Alert.Root>
+				{/if}
+			{/if}
+		</div>
+		<div class="mb-2 flex justify-end">
 			<ModelSelect {models} bind:selected={model} />
 		</div>
 		<div class="bg-background/70 backdrop-blur-md">
@@ -86,9 +125,11 @@
 			/>
 			<div class="absolute bottom-2 left-2">
 				<div class="flex items-center space-x-1">
+					<!--
 					<Button size="icon" variant="ghost">
 						<Paperclip class="h-4 w-4" />
 					</Button>
+					-->
 					<Toggle bind:pressed={search}
 						>{#if search}<SearchCheck class="h-4 w-4" />{:else}<Search
 								class="h-4 w-4"
