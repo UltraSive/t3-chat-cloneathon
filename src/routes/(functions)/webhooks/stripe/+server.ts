@@ -45,7 +45,7 @@ export async function POST({ request }) {
       console.log("Checkout session completed: ", checkoutSessionCompleted);
 
       const checkoutSessionCustomerId = checkoutSessionCompleted.customer
-      const checkoutSessionSubscriptionId = checkoutSessionCompleted.items.data[0].subscription
+      const checkoutSessionSubscriptionId = checkoutSessionCompleted.subscription
       console.log("Subscription Id: ", checkoutSessionSubscriptionId);
 
       const checkoutSessionUser = await getUserByStripeCustomerId(checkoutSessionCustomerId);
@@ -53,7 +53,7 @@ export async function POST({ request }) {
       await db
         .update(users)
         .set({
-          stripeSubscriptionId: checkoutSessionCustomerId,
+          stripeSubscriptionId: checkoutSessionSubscriptionId,
           subscribedAt: new Date()
         })
         .where(eq(users.id, checkoutSessionUser.id));
@@ -63,7 +63,7 @@ export async function POST({ request }) {
       console.log("Checkout session completed: ", customerSubscriptionDeleted);
 
       const stripeCustomerId = customerSubscriptionDeleted.customer
-      const stripeSubscriptionId = customerSubscriptionDeleted.items.data[0].subscription
+      const stripeSubscriptionId = customerSubscriptionDeleted.id
       console.log("Subscription Id: ", stripeSubscriptionId);
 
       const user = await getUserByStripeCustomerId(stripeCustomerId);

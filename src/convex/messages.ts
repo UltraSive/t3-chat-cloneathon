@@ -57,8 +57,9 @@ export const updateMessage = mutation({
       v.literal("processing"),
       v.literal("failed")
     )),
+    annotations: v.optional(v.string())
   },
-  handler: async (ctx, { message, content, status }) => {
+  handler: async (ctx, { message, content, status, annotations }) => {
     const messageId = message as Id<'messages'>;
 
     const existing = await ctx.db.get(messageId);
@@ -69,6 +70,7 @@ export const updateMessage = mutation({
     const updates: Partial<typeof existing> = {};
     if (content !== undefined) updates.content = content;
     if (status !== undefined) updates.status = status;
+    if (annotations !== undefined) updates.annotations = annotations
 
     await ctx.db.patch(messageId, updates);
     return { success: true };

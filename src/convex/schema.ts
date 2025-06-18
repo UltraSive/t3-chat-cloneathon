@@ -35,6 +35,7 @@ export default defineSchema({
     model: v.optional(v.string()),
     token: v.optional(v.string()),
     premium: v.optional(v.boolean()),
+    annotations: v.optional(v.string()),
     user: v.string(),
     thread: v.id("threads"),
   }).index("by_thread", ["thread"])

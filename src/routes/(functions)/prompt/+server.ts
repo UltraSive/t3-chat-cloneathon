@@ -42,7 +42,7 @@ interface Message {
   content: string;
 }
 
-async function processRelay(model: string, messages: Message[], responseId: string) {
+async function processRelay(model: string, messages: Message[], responseId: string, search: boolean) {
   const relayBody = {
     //model: "openai/gpt-4o-mini",
     model,
@@ -51,7 +51,8 @@ async function processRelay(model: string, messages: Message[], responseId: stri
     //max_tokens: 256,
     top_p: 1,
     frequency_penalty: 0,
-    presence_penalty: 0
+    presence_penalty: 0,
+    ...(search && { plugins: [{ id: 'web' }] })
   };
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -76,18 +77,20 @@ async function processRelay(model: string, messages: Message[], responseId: stri
   const decoder = new TextDecoder();
   let buffer = '';
 
+  let messageObj;
   let content = '';
   let nextTask: (() => Promise<void>) | null = null;
   let processing = false;
 
-  function enqueueLatestUpdate(status: string) {
+  function enqueueLatestUpdate(status: string, annotations: string | undefined) {
     // Replace any existing pending task with the latest one
     nextTask = async () => {
       try {
         await convexClient.mutation(api.messages.updateMessage, {
           message: responseId,
           content,
-          status
+          status,
+          annotations
         });
       } catch (err) {
         console.error("Convex update error:", err);
@@ -131,9 +134,11 @@ async function processRelay(model: string, messages: Message[], responseId: stri
           const message = JSON.parse(data);
           const delta = message.choices?.[0]?.delta?.content;
 
+          messageObj = message;
+
           if (delta) {
             content += delta;
-            enqueueLatestUpdate("processing");
+            enqueueLatestUpdate("processing", undefined);
           }
         } catch (e) {
           console.error('Parse error:', e);
@@ -142,7 +147,7 @@ async function processRelay(model: string, messages: Message[], responseId: stri
     }
   }
 
-  enqueueLatestUpdate("finished");
+  enqueueLatestUpdate("finished", messageObj.annotations);
   /*await new Promise(resolve => setTimeout(resolve, 300));
   await convexClient.mutation(api.messages.updateMessage, {
     message: responseId,
@@ -154,9 +159,9 @@ async function processRelay(model: string, messages: Message[], responseId: stri
 // Define a Zod schema for action
 const chatSchema = z.object({
   thread: z.optional(z.string()),
-  modify: z.optional(z.string()), // Used to edit a message or retry (if you use the same message)
   model: z.string(),
   message: z.string(),
+  modify: z.optional(z.string()), // Used to edit a message or retry (if you use the same message)
   search: z.optional(z.boolean())
 });
 
@@ -175,7 +180,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   }
 
   const data = validatedBody.data;
-  const { thread, model, message } = data;
+  const { thread, model, message, modify, search } = data;
 
   const [modelErr, foundModel] = await catchError(getModelById(model));
 
@@ -270,7 +275,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   const messages = [
     {
       role: "system",
-      content: createSystemPrompt(user.nickname, user.occupation, user.traits, user.additionalInfo)
+      content: createSystemPrompt(user.nickname, user.occupation, user.traits, user.additionalInfo, search)
     },
     ...formattedHistory ?? [],
     {

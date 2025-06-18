@@ -26,7 +26,7 @@
 	<AppSidebar {user} />
 	<main class="w-full relative">
     <div class="sticky top-1 left-1 z-10 m-1 w-fit">
-        <div class="absolute bg-muted/50 space-x-1 rounded p-1">
+        <div class="flex items-center bg-muted/50 space-x-1 rounded p-1">
             <Sidebar.Trigger />
             <Button size="icon" variant="ghost" class="size-7" href="/"><SquarePen /></Button>
         </div>
