@@ -75,6 +75,50 @@ export const updateMessage = mutation({
   },
 });
 
+export const modifyMessage = mutation({
+  args: {
+    messageId: v.id("messages"),
+    newContent: v.string(),
+  },
+  handler: async (ctx, { messageId, newContent }) => {
+    // 1. Validate and fetch the original message
+    const originalMessage = await ctx.db.get(messageId);
+    if (!originalMessage) {
+      throw new Error(`Message with ID ${messageId} not found.`);
+    }
+
+    const threadId = originalMessage.thread;
+    const now = new Date().toISOString();
+
+    // 2. Update the original message's content
+    await ctx.db.patch(messageId, {
+      content: newContent,
+      updatedAt: now, // Optionally update the timestamp
+    });
+
+    // 3. Fetch and update subsequent messages
+    const subsequentMessages = await ctx.db
+      .query("messages")
+      .withIndex("by_thread", (q) =>
+        q.eq("thread", threadId) // Filter by the relevant thread
+      )
+      .filter((msg) => new Date(msg.createdAt).getTime() > new Date(originalMessage.createdAt).getTime())
+      .collect();
+
+    // 4. Update status of subsequent messages to "archived"
+    if (subsequentMessages.length > 0) {
+      const updatePromises = subsequentMessages.map((msg) =>
+        ctx.db.patch(msg.id, {
+          status: "archived",
+        })
+      );
+      await Promise.all(updatePromises);
+    }
+    
+    return { messageId, updatedContent: newContent, archivedCount: subsequentMessages.length };
+  },
+});
+
 export const getMessagesFromThread = query({
   args: {
     thread: v.string(),

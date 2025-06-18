@@ -60,7 +60,10 @@ export const getUserPaginatedThreadsWithOldestMessage = query({
       })
     );
 
-    return results;
+    return {
+      results,
+      count: userThreads.length
+    };
   },
 });
 

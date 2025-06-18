@@ -8,11 +8,13 @@
 
 	let { user } = $props();
 
-	const query = useQuery(api.threads.getUserPaginatedThreadsWithOldestMessage, {
+	let count = $state(25)
+
+	const query = $derived(useQuery(api.threads.getUserPaginatedThreadsWithOldestMessage, {
 		offset: 0,
-		count: 25,
+		count: count,
 		user: user ? user.id : ''
-	});
+	}));
 
 	// Function to truncate message content
 	function truncateChars(str, maxChars) {
@@ -63,7 +65,7 @@
 	failed to load: {query.error.toString()}
 {:else}
 	<Sidebar.Group>
-		{@const groupedThreads = groupThreadsByDate(query.data)}
+		{@const groupedThreads = groupThreadsByDate(query.data.results)}
 		{#each Object.entries(groupedThreads) as [dateLabel, threads]}
 			{#if threads.length > 0}
 				<Sidebar.GroupLabel
@@ -85,5 +87,8 @@
 				</Sidebar.GroupContent>
 			{/if}
 		{/each}
+		{#if query.data.count >= count} <!-- Only show the button if there might be more data -->
+			<Sidebar.MenuButton onclick={() => count += 10} class="flex justify-center">Load More...</Sidebar.MenuButton>
+		{/if}
 	</Sidebar.Group>
 {/if}
