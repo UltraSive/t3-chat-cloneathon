@@ -24,7 +24,7 @@
 <Sidebar.Root>
 	<Sidebar.Header>
 		<NavMain items={data.navMain} />
-		<SearchForm />
+		<!--<SearchForm />-->
 	</Sidebar.Header>
 	<Sidebar.Content>
 		<NavThreads {user} />
