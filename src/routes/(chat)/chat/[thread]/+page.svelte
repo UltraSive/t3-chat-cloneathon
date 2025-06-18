@@ -18,9 +18,12 @@
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { Button } from '$lib/components/ui/button';
 
-	import { User, Bot, Copy, RotateCcw, Split, Pencil } from 'lucide-svelte';
+	import { User, Bot, Copy, RotateCcw, Split, Pencil, Send } from 'lucide-svelte';
 
 	import type { PageProps } from './$types';
+
+	let editingMessageId: string | null = $state(null);
+	let editingMessageContent: string = $state('');
 
 	let scrollArea: HTMLDivElement | null = $state(null);
 	let isAtBottom = $state(false);
@@ -125,7 +128,37 @@
 									<div class="font-semibold" class:text-right={isUser}>
 										{isUser ? 'You' : 'Assistant'}
 									</div>
-									{#if message.role === 'user'}
+									{#if editingMessageId === message._id}
+										<div>
+											<textarea
+												bind:value={editingMessageContent}
+												rows="1"
+												class="inline-block w-full resize-none rounded-md border px-2 py-1"
+												onkeydown={(e) => {
+													if (e.key === 'Enter' && !e.shiftKey) {
+														e.preventDefault(); // Prevent new lines
+														//editMessage(message._id, editingMessageContent);
+													}
+												}}
+												placeholder="Edit your message..."
+											></textarea>
+											<div class="flex justify-end">
+												<Button
+													onclick={() => {
+														modifyMessage(
+															query.data.thread._id,
+															message.model,
+															message._id,
+															editingMessageContent
+														);
+
+														editingMessageId = null;
+														editingMessageContent = '';
+													}}><Send /></Button
+												>
+											</div>
+										</div>
+									{:else if message.role === 'user'}
 										<div class="whitespace-pre-wrap">{message.content}</div>
 									{:else if message.role === 'assistant'}
 										{#if message.content === '' && message.status === 'processing'}
@@ -137,41 +170,50 @@
 									{/if}
 								</div>
 							</div>
-							<div
-								class="mb-2 space-x-0.5 px-4 transition-opacity duration-200"
-								class:text-right={!isUser}
-								class:opacity-100={hoveredMessageId === message._id &&
-									message.status === 'finished'}
-								class:opacity-0={hoveredMessageId !== message._id}
-								class:pointer-events-none={hoveredMessageId !== message._id}
-							>
-								<Button variant="ghost" size="sm" onclick={() => copyToClipboard(message.content)}
-									><Copy class="h-3 w-3" /></Button
+							{#if message.status !== 'processing'}
+								<div
+									class="mb-2 space-x-0.5 px-4 transition-opacity duration-200"
+									class:text-right={!isUser}
+									class:opacity-100={hoveredMessageId === message._id &&
+										message.status === 'finished'}
+									class:opacity-0={hoveredMessageId !== message._id}
+									class:pointer-events-none={hoveredMessageId !== message._id}
 								>
-								<Button
-									variant="ghost"
-									size="sm"
-									onclick={() =>
-										modifyMessage(
-											query.data.thread._id,
-											message.model,
-											message.role === 'assistant' ? query.data.messages[i - 1]._id : message._id,
-											message.role === 'assistant'
-												? query.data.messages[i - 1].content
-												: message.content
-										)}><RotateCcw class="h-3 w-3" /></Button
-								>
-								{#if !isUser}
+									<Button variant="ghost" size="sm" onclick={() => copyToClipboard(message.content)}
+										><Copy class="h-3 w-3" /></Button
+									>
 									<Button
 										variant="ghost"
 										size="sm"
-										onclick={() => branchThread(query.data.thread._id, message._id)}
-										><Split class="h-3 w-3" /></Button
+										onclick={() =>
+											modifyMessage(
+												query.data.thread._id,
+												message.model,
+												message.role === 'assistant' ? query.data.messages[i - 1]._id : message._id,
+												message.role === 'assistant'
+													? query.data.messages[i - 1].content
+													: message.content
+											)}><RotateCcw class="h-3 w-3" /></Button
 									>
-								{:else}
-									<Button variant="ghost" size="sm"><Pencil class="h-3 w-3" /></Button>
-								{/if}
-							</div>
+									{#if !isUser}
+										<Button
+											variant="ghost"
+											size="sm"
+											onclick={() => branchThread(query.data.thread._id, message._id)}
+											><Split class="h-3 w-3" /></Button
+										>
+									{:else}
+										<Button
+											variant="ghost"
+											size="sm"
+											onclick={() => {
+												editingMessageId = message._id;
+												editingMessageContent = message.content;
+											}}><Pencil class="h-3 w-3" /></Button
+										>
+									{/if}
+								</div>
+							{/if}
 						</div>
 					{/if}
 				{/each}

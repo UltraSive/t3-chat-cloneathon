@@ -107,8 +107,6 @@ export const modifyMessage = mutation({
       )
       .collect();
 
-      console.log(subsequentMessages)
-
     // 4. Update status of subsequent messages to "archived"
     if (subsequentMessages.length > 0) {
       const updatePromises = subsequentMessages.map((msg) =>
