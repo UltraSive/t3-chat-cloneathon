@@ -100,9 +100,8 @@ export const modifyMessage = mutation({
     const subsequentMessages = await ctx.db
       .query("messages")
       .withIndex("by_thread", (q) =>
-        q.eq("thread", threadId) // Filter by the relevant thread
+        q.eq("thread", threadId).gt("_creationTime", originalMessage._creationTime) // Filter by the relevant thread
       )
-      .filter((msg) => new Date(msg.createdAt).getTime() > new Date(originalMessage.createdAt).getTime())
       .collect();
 
     // 4. Update status of subsequent messages to "archived"
@@ -114,7 +113,7 @@ export const modifyMessage = mutation({
       );
       await Promise.all(updatePromises);
     }
-    
+
     return { messageId, updatedContent: newContent, archivedCount: subsequentMessages.length };
   },
 });

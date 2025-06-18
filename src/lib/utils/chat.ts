@@ -23,5 +23,7 @@ export async function branchThread(thread: string, message: string) {
     return;
   }
 
+  toast.success("Thread has been branched successfully");
+
   goto(`/chat/${res.branched}`);
 }

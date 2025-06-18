@@ -10,5 +10,5 @@
 
 {@render children()}
 
-<Toaster />
+<Toaster position="top-right" />
 <ModeWatcher />

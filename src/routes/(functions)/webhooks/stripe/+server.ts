@@ -1,6 +1,9 @@
 import { stripe } from '$lib/server/stripe'
 import { error, json } from '@sveltejs/kit'
-import db from '$lib/server/drizzle'
+import { db } from '$lib/server/drizzle';
+import { users } from '$lib/server/drizzle/schema';
+import { eq } from 'drizzle-orm';
+import { getUserByStripeCustomerId } from '$lib/server/drizzle/queries';
 
 import { PRIVATE_STRIPE_WEBHOOK_SECRET } from '$env/static/private';
 
@@ -41,37 +44,37 @@ export async function POST({ request }) {
       const checkoutSessionCompleted = event.data.object;
       console.log("Checkout session completed: ", checkoutSessionCompleted);
 
-      let user = await db.user.findUnique({
-        where: {
-          id: checkoutSessionCompleted.metadata.userId,
-        },
-      });
+      const checkoutSessionCustomerId = checkoutSessionCompleted.customer
+      const checkoutSessionSubscriptionId = checkoutSessionCompleted.items.data[0].subscription
+      console.log("Subscription Id: ", checkoutSessionSubscriptionId);
 
-      const cartItems = JSON.parse(checkoutSessionCompleted.metadata.cartItems);
-      console.log(cartItems);
+      const checkoutSessionUser = await getUserByStripeCustomerId(checkoutSessionCustomerId);
 
-      const subscription = await stripe.subscriptions.retrieve(checkoutSessionCompleted.subscription);
-
-      for (let id of cartItems) {
-        console.log("id: ", id);
-        const cartItem = await db.cartItem.findUnique({
-          where: {
-            id: id,
-          },
+      await db
+        .update(users)
+        .set({
+          stripeSubscriptionId: checkoutSessionCustomerId,
+          subscribedAt: new Date()
         })
-        console.log("cartItem: ", cartItem)
-
-        // get the item details
-        const itemDetails = await getItem(cartItem);
-        console.log("item details: ", itemDetails);
-
-        let serviceId; // placeholder for the service id
-        let serviceStatus = 'ALLOCATED'; // placeholder for the service status
-        let stripeSubscriptionItem; // placeholder for the stripe subscription item id
-      }
+        .where(eq(users.id, checkoutSessionUser.id));
       break;
     case 'customer.subscription.deleted':
-      
+      const customerSubscriptionDeleted = event.data.object;
+      console.log("Checkout session completed: ", customerSubscriptionDeleted);
+
+      const stripeCustomerId = customerSubscriptionDeleted.customer
+      const stripeSubscriptionId = customerSubscriptionDeleted.items.data[0].subscription
+      console.log("Subscription Id: ", stripeSubscriptionId);
+
+      const user = await getUserByStripeCustomerId(stripeCustomerId);
+
+      await db
+        .update(users)
+        .set({
+          stripeSubscriptionId: null,
+          subscribedAt: null
+        })
+        .where(eq(users.id, user.id));
     default:
       console.log(`Unhandled event type ${event.type}`);
   }
