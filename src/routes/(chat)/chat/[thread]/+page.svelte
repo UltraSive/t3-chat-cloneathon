@@ -12,6 +12,8 @@
 	import LoadError from '$lib/components/chat/LoadError.svelte';
 	import ScrollDownButton from '$lib/components/chat/ScrollDownButton.svelte';
 
+	import { branchThread } from "$lib/utils/chat";
+
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { Button } from '$lib/components/ui/button';
@@ -146,7 +148,7 @@
 							>
 							<Button variant="ghost" size="sm"><RotateCcw class="h-3 w-3" /></Button>
 							{#if !isUser}
-								<Button variant="ghost" size="sm"><Split class="h-3 w-3" /></Button>
+								<Button variant="ghost" size="sm" onclick={() => branchThread(query.data.thread._id, message._id)}><Split class="h-3 w-3" /></Button>
 							{:else}
 								<Button variant="ghost" size="sm"><Pencil class="h-3 w-3" /></Button>
 							{/if}

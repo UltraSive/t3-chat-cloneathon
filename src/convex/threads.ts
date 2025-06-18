@@ -1,7 +1,7 @@
 import { query, internalQuery, mutation, action } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
-import { api } from './_generated/api'; 
+import { api } from './_generated/api';
 
 export const createUserThread = mutation({
   args: {
@@ -118,7 +118,7 @@ export const branchThread = mutation({
   handler: async (ctx, { thread, message }) => {
     const parentThreadId = thread as Id<'threads'>;
     const branchFromMessageId = message as Id<'messages'>;
-    
+
     // 1. Validate inputs and fetch necessary data
     const parentThread = await ctx.db.get(parentThreadId);
     if (!parentThread) {
@@ -151,36 +151,35 @@ export const branchThread = mutation({
     // 3. Clone messages from the parent thread up to the branchFromMessage (exclusive)
     // We need to fetch messages ordered by createdAt to ensure we get them in the correct sequence.
     // The 'by_thread' index (thread, createdAt) is perfect for this.
-    const messagesToClone = await ctx.db
+    let messagesToClone = await ctx.db
       .query("messages")
       .withIndex("by_thread", (q) =>
-        q.eq("thread", parentThreadId) // Filter by the parent thread
+        q.eq("thread", parentThreadId)
+          .lt("_creationTime", branchFromMessage._creationTime) // Filter by the parent thread
       )
       .order("asc") // Order by createdAt
       .collect();
 
-    // Filter messages that occurred strictly before the branchFromMessage
-    const messagesBeforeBranchPoint = messagesToClone.filter(
-      (msg) => new Date(msg.createdAt).getTime() < new Date(branchFromMessage.createdAt).getTime()
-    );
+    // Add in the cloned from message
+    messagesToClone = [...messagesToClone, branchFromMessage];
 
-    if (messagesBeforeBranchPoint.length > 0) {
-        // Use Promise.all to insert messages in parallel for efficiency
-        const insertPromises = messagesBeforeBranchPoint.map((msg) =>
-            ctx.db.insert("messages", {
-                // Keep relevant fields, but set new thread ID and fresh timestamps
-                content: msg.content,
-                createdAt: msg.createdAt, // Keep original creation time for historical accuracy within the new thread
-                role: msg.role,
-                status: msg.status, // Keep original status unless specified otherwise
-                model: msg.model,
-                token: msg.token,
-                premium: msg.premium,
-                user: msg.user,
-                thread: newThreadId, // Assign to the new thread
-            })
-        );
-        await Promise.all(insertPromises);
+    if (messagesToClone.length > 0) {
+      // Use Promise.all to insert messages in parallel for efficiency
+      const insertPromises = messagesToClone.map((msg) =>
+        ctx.db.insert("messages", {
+          // Keep relevant fields, but set new thread ID and fresh timestamps
+          content: msg.content,
+          createdAt: msg.createdAt, // Keep original creation time for historical accuracy within the new thread
+          role: msg.role,
+          status: msg.status, // Keep original status unless specified otherwise
+          model: msg.model,
+          token: msg.token,
+          premium: msg.premium,
+          user: msg.user,
+          thread: newThreadId, // Assign to the new thread
+        })
+      );
+      await Promise.all(insertPromises);
     }
 
     // 4. Update the status of the branchFromMessage in the parent thread

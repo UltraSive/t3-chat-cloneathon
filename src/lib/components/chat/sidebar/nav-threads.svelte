@@ -4,6 +4,8 @@
 	import { api } from '$convex/_generated/api.js';
 	import * as Sidebar from '$lib/components/ui/sidebar';
 
+	import { Split } from "lucide-svelte";
+
 	let { user } = $props();
 
 	const query = useQuery(api.threads.getUserPaginatedThreadsWithOldestMessage, {
@@ -75,7 +77,7 @@
 							{@const oldestMessage = result.oldestMessage}
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton isActive={thread._id === page.params.thread}>
-									<a href="/chat/{thread._id}">{truncateChars(oldestMessage.content, 30)}</a>
+									<a href="/chat/{thread._id}" class="flex items-center">{#if thread.parentThread}<Split class="w-4 h-4 mr-2" />{/if}{truncateChars(oldestMessage.content, 25)}</a>
 								</Sidebar.MenuButton>
 							</Sidebar.MenuItem>
 						{/each}

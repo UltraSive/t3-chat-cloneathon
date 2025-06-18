@@ -37,7 +37,7 @@ export default defineSchema({
     premium: v.optional(v.boolean()),
     user: v.string(),
     thread: v.id("threads"),
-  }).index("by_thread", ["thread", "createdAt"])
-  .index("by_thread_status_createdAt", ["thread", "status", "createdAt"])
+  }).index("by_thread", ["thread"])
+  .index("by_thread_status_createdAt", ["thread", "status"])
   .index("by_user_role_status", ["user", "role", "status"])
 });
