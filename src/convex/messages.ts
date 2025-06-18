@@ -250,8 +250,6 @@ export const getAssistantMessageCounts = query({
     const endWindow = new Date(startWindow);
     endWindow.setMonth(endWindow.getMonth() + 1);
 
-    console.log(startWindow, endWindow);
-
     // Step 3: Query for messages from the user with the assistant role in the calculated date range
     const finishedMessages = await ctx.db
       .query("messages")

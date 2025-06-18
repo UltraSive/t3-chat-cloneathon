@@ -60,7 +60,7 @@ export async function POST({ request }) {
       break;
     case 'customer.subscription.deleted':
       const customerSubscriptionDeleted = event.data.object;
-      console.log("Checkout session completed: ", customerSubscriptionDeleted);
+      console.log("Customer subscription deleted: ", customerSubscriptionDeleted);
 
       const stripeCustomerId = customerSubscriptionDeleted.customer
       const stripeSubscriptionId = customerSubscriptionDeleted.id
@@ -75,6 +75,7 @@ export async function POST({ request }) {
           subscribedAt: null
         })
         .where(eq(users.id, user.id));
+      break;
     default:
       console.log(`Unhandled event type ${event.type}`);
   }

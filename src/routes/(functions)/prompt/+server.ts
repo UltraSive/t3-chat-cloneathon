@@ -42,7 +42,7 @@ interface Message {
   content: string;
 }
 
-async function processRelay(model: string, messages: Message[], responseId: string, search: boolean) {
+async function processRelay(model: string, messages: Message[], responseId: string, search: boolean | undefined) {
   const relayBody = {
     //model: "openai/gpt-4o-mini",
     model,
@@ -77,7 +77,6 @@ async function processRelay(model: string, messages: Message[], responseId: stri
   const decoder = new TextDecoder();
   let buffer = '';
 
-  let messageObj;
   let content = '';
   let nextTask: (() => Promise<void>) | null = null;
   let processing = false;
@@ -117,7 +116,9 @@ async function processRelay(model: string, messages: Message[], responseId: stri
 
   while (true) {
     const { done, value } = await reader.read();
-    if (done) break;
+    if (done) {
+      break;
+    };
 
     buffer += decoder.decode(value, { stream: true });
 
@@ -134,8 +135,6 @@ async function processRelay(model: string, messages: Message[], responseId: stri
           const message = JSON.parse(data);
           const delta = message.choices?.[0]?.delta?.content;
 
-          messageObj = message;
-
           if (delta) {
             content += delta;
             enqueueLatestUpdate("processing", undefined);
@@ -147,7 +146,7 @@ async function processRelay(model: string, messages: Message[], responseId: stri
     }
   }
 
-  enqueueLatestUpdate("finished", messageObj.annotations);
+  enqueueLatestUpdate("finished", undefined);
   /*await new Promise(resolve => setTimeout(resolve, 300));
   await convexClient.mutation(api.messages.updateMessage, {
     message: responseId,
@@ -277,6 +276,15 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       role: "system",
       content: createSystemPrompt(user.nickname, user.occupation, user.traits, user.additionalInfo, search)
     },
+    ...(search
+      ? [
+        {
+          role: "system",
+          content:
+            "When presenting the final answer, include a 'Citations' section at the end of the markdown listing all sources used.",
+        },
+      ]
+      : []),
     ...formattedHistory ?? [],
     {
       role: "user",
@@ -284,9 +292,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     }
   ];
 
-  console.log(messages);
-
-  processRelay(model, messages, assistantMutation);
+  processRelay(model, messages, assistantMutation, search);
 
   return json({ success: true, thread: referencedThread }, { status: 200 });
 };
