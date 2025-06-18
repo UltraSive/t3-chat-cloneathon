@@ -136,3 +136,81 @@ export const getFinishedMessagesFromThread = query({
     return messages;
   },
 });
+
+export const getAssistantMessageCounts = query({
+  args: {
+    user: v.string(),
+    anchorDate: v.number(), // Expecting ISO string format for the anchor date
+    window: v.optional(v.union(v.literal("monthly"), v.literal("daily")))
+  },
+  handler: async (ctx, { user, anchorDate }) => {
+    // Step 1: Parse the anchor date
+    const anchorDateTime = new Date(anchorDate);
+
+    // Step 2: Determine the current window based on the anchor date
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+
+    // Calculate the start of the window
+    const startWindow = new Date(anchorDateTime);
+    startWindow.setHours(anchorDateTime.getHours(), anchorDateTime.getMinutes(), anchorDateTime.getSeconds(), 0);
+
+    // Check if the start window is within the same month as the current date
+    if (startWindow.getFullYear() === currentYear && startWindow.getMonth() === currentMonth) {
+      // If start window is within the current month, do nothing
+    } else {
+      // If start window is in the past, loop until we find the next window
+      while (startWindow < currentDate) {
+        const nextMonth = startWindow.getMonth() + 1;
+        const nextYear = nextMonth === 12 ? startWindow.getFullYear() + 1 : startWindow.getFullYear();
+        startWindow.setMonth(nextMonth);
+        startWindow.setFullYear(nextYear);
+      }
+    }
+
+    // Calculate the end of the window
+    const endWindow = new Date(startWindow);
+    endWindow.setMonth(endWindow.getMonth() + 1);
+
+    console.log(startWindow, endWindow);
+
+    // Step 3: Query for messages from the user with the assistant role in the calculated date range
+    const finishedMessages = await ctx.db
+      .query("messages")
+      .withIndex("by_user_role_status", (q) =>
+        q.eq("user", user)
+          .eq("role", "assistant")
+          .eq("status", "finished") // First query for finished status
+          .gt("_creationTime", startWindow.getTime()) // Start of window
+          .lt("_creationTime", endWindow.getTime()) // End of window
+      )
+      .collect();
+
+    const processingMessages = await ctx.db
+      .query("messages")
+      .withIndex("by_user_role_status", (q) =>
+        q.eq("user", user)
+          .eq("role", "assistant")
+          .eq("status", "processing") // Second query for processing status
+          .gt("_creationTime", startWindow.getTime()) // Start of window
+          .lt("_creationTime", endWindow.getTime()) // End of window
+      )
+      .collect();
+
+    // Combine results
+    const allMessages = [...finishedMessages, ...processingMessages];
+
+    // Step 4: Count the total messages
+    const totalCount = allMessages.length;
+
+    // Step 5: Count the premium messages
+    const premiumCount = allMessages.filter(message => message.premium === true).length;
+
+    // Step 6: Return the results
+    return {
+      totalCount,
+      premiumCount
+    };
+  },
+});

@@ -2,7 +2,7 @@ import type { RequestHandler } from '@sveltejs/kit';
 import { json } from '@sveltejs/kit';
 import { z } from 'zod';
 import { catchError } from "$lib/handle";
-
+import { getModelById } from '$lib/server/drizzle/queries';
 import convexClient from "$lib/server/convex"
 import { api } from '$convex/_generated/api.js';
 
@@ -176,6 +176,32 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
   const data = validatedBody.data;
   const { thread, model, message } = data;
+
+  const [modelErr, foundModel] = await catchError(getModelById(model));
+
+  if (modelErr) {
+    return json({ success: false, message: "Model not found" }, { status: 400 });
+  }
+
+  const [countErr, countQuery] = await catchError(convexClient.query(api.messages.getAssistantMessageCounts, {
+    user: user.id,
+    anchorDate: user.createdAt.getTime()
+  }));
+
+  if (countErr) {
+    console.log(countErr);
+    return json({ success: false, message: "Error calculating messages left" }, { status: 400 });
+  }
+
+  if (user.stripeSubscriptionId) {
+    if (countQuery.totalCount > 1500) {
+      return json({ success: false, message: "Message limit exceeded" }, { status: 400 });
+    }
+  } else {
+    if (countQuery.totalCount > 10) {
+      return json({ success: false, message: "Message limit exceeded" }, { status: 400 });
+    }
+  }
 
   let referencedThread;
   let formattedHistory: Message[] = [];

@@ -22,11 +22,11 @@
 		const now = new Date();
 
 		const groups = {
-			today: [],
-			yesterday: [],
-			Last7Days: [],
-			Last30Days: [],
-			older: []
+			"Today": [],
+			"Yesterday": [],
+			"Last 7 Days": [],
+			"Last 30 Days": [],
+			"Older": []
 		};
 
 		threads.forEach((result) => {
@@ -37,17 +37,17 @@
 			const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
 			if (diffDays === 0) {
-				groups.today.push(result);
+				groups['Today'].push(result);
 			} else if (diffDays === 1) {
-				groups.yesterday.push(result);
+				groups['Yesterday'].push(result);
 			} else if (messageDate.getTime() >= now.setDate(now.getDate() - now.getDay())) {
-				groups.Last7Days.push(result);
+				groups['Last 7 Days'].push(result);
 			} else if (
 				messageDate.getTime() >= new Date(now.getFullYear(), now.getMonth(), 1).getTime()
 			) {
-				groups.Last30Days.push(result);
+				groups['Last 30 Days'].push(result);
 			} else {
-				groups.older.push(result);
+				groups['Older'].push(result);
 			}
 		});
 
@@ -65,7 +65,7 @@
 		{#each Object.entries(groupedThreads) as [dateLabel, threads]}
 			{#if threads.length > 0}
 				<Sidebar.GroupLabel
-					>{dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}</Sidebar.GroupLabel
+					>{dateLabel}</Sidebar.GroupLabel
 				>
 				<!-- Capitalize the label -->
 				<Sidebar.GroupContent>

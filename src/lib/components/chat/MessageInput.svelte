@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 
+	import { toast } from "svelte-sonner";
+
 	import { preventDefault } from '$lib/modifiers';
 
 	let { user, thread, models, model = $bindable(), processing = $bindable() } = $props();
@@ -44,6 +46,7 @@
 
 		if (!response.ok) {
 			submitting = false;
+			toast.error(res.message);
 			return;
 		}
 

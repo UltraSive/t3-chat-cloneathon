@@ -37,4 +37,5 @@ export default defineSchema({
     thread: v.id("threads"),
   }).index("by_thread", ["thread", "createdAt"])
   .index("by_thread_status_createdAt", ["thread", "status", "createdAt"])
+  .index("by_user_role_status", ["user", "role", "status"])
 });
