@@ -51,11 +51,11 @@
 		event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }
 	) {
 		// Prevent empty messages from being sent
-if (!text.trim()) {
-    toast.warning('Please enter a message.');
-    submitting = false;
-    return;
-}
+		if (!text.trim()) {
+			toast.warning('Please enter a message.');
+			submitting = false;
+			return;
+		}
 
 		submitting = true;
 
@@ -110,8 +110,8 @@ if (!text.trim()) {
 	);
 </script>
 
-<div class="mx-auto flex max-w-3xl flex-col h-full">
-	<div class="relative">
+<div class="">
+	<div class="mx-auto max-w-3xl">
 		<div class="mb-2 flex justify-center">
 			{#if countQuery.isLoading}{:else if countQuery.error}{:else}
 				{@const totalCount = countQuery.data.totalCount}
@@ -119,7 +119,7 @@ if (!text.trim()) {
 				{@const messagesAllowed = user.stripeSubscriptionId ? 1500 : 30}
 				{@const messagesLeft = messagesAllowed - totalCount}
 				{#if messagesLeft < 10}
-					<Alert.Root variant="destructive" class="bg-muted/50 backdrop-blur-md">
+					<Alert.Root variant="destructive" class="bg-muted/50 backdrop-blur-lg">
 						<CircleAlertIcon class="size-4" />
 						<Alert.Title>Running low on messages</Alert.Title>
 						<Alert.Description
@@ -153,8 +153,8 @@ if (!text.trim()) {
 							<AlertDialog.Header>
 								<AlertDialog.Title>Enable Search Functionality?</AlertDialog.Title>
 								<AlertDialog.Description>
-									Enabling search allows the AI to perform web searches to answer your prompts.
-									This might use additional resources or message credits. Do you want to proceed?
+									Enabling search allows the AI to perform web searches to answer your prompts. This
+									might use additional resources or message credits. Do you want to proceed?
 								</AlertDialog.Description>
 							</AlertDialog.Header>
 							<AlertDialog.Footer>
@@ -174,24 +174,26 @@ if (!text.trim()) {
 				<ModelSelect {models} bind:selected={model} />
 			</div>
 		</div>
-		<form method="POST" class="relative" onsubmit={preventDefault(submitPrompt)}>
-			<Textarea
-				id="message"
-				name="message"
-				placeholder="Message assistant..."
-				class="bg-background/70 max-h-72 min-h-36 resize-none pr-12"
-				bind:value={text}
-				disabled={submitting || processing || !model}
-				onkeydown={handleKeyDown}
-			/>
-			<Button
-				type="submit"
-				size="icon"
-				disabled={submitting || processing || !model}
-				class="absolute right-2 bottom-2"
-			>
-				<Send class="h-4 w-4" />
-			</Button>
-		</form>
+		<div class="bg-muted/50 relative rounded-lg p-2 backdrop-blur-sm">
+			<form method="POST" class="" onsubmit={preventDefault(submitPrompt)}>
+				<Textarea
+					id="message"
+					name="message"
+					placeholder="Message assistant..."
+					class="max-h-72 min-h-36 resize-none pr-12"
+					bind:value={text}
+					disabled={submitting || processing || !model}
+					onkeydown={handleKeyDown}
+				/>
+				<Button
+					type="submit"
+					size="icon"
+					disabled={submitting || processing || !model}
+					class="absolute right-2 bottom-2 m-2"
+				>
+					<Send class="h-4 w-4" />
+				</Button>
+			</form>
+		</div>
 	</div>
 </div>
