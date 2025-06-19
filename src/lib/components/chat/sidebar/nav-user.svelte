@@ -17,6 +17,7 @@
     LogIn,
 		User
 	} from 'lucide-svelte';
+	import { goto } from '$app/navigation';
 	let { user } = $props();
 
 	const sidebar = useSidebar();
@@ -75,7 +76,7 @@
 						{/if}
 					</DropdownMenu.Group>
 					<DropdownMenu.Group>
-						<DropdownMenu.Item onclick={() => (document.location = '/settings')}>
+						<DropdownMenu.Item onclick={() => (goto('/settings'))}>
 							<Settings />
 							Settings
 						</DropdownMenu.Item>

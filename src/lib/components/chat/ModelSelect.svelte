@@ -6,7 +6,7 @@
 
 {#if models && models.length > 0}
 	<Select.Root type="single" bind:value={selected}>
-		<Select.Trigger class="w-[180px] bg-muted">
+		<Select.Trigger class="w-[180px] bg-background/70 backdrop-blur-md">
 			{@const model = models.find((model) => model.id === selected)}
 			{model.name}
 		</Select.Trigger>
