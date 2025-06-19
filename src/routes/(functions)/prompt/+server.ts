@@ -8,14 +8,9 @@ import { api } from '$convex/_generated/api.js';
 
 import { OPENROUTER_API_KEY } from '$env/static/private';
 
-function createSystemPrompt(
-	nickname: string,
-	occupation: string,
-	traits: string[],
-	additionalInfo: string
-) {
-	let prompt = 'You are an assistant with the following preferences:\n';
-  let noTraits = true
+function createSystemPrompt(nickname: string, occupation: string, traits: string[], additionalInfo: string) {
+  let prompt = "You are an assistant with the following preferences:\n";
+  let noTraits = true;
 
 	if (nickname) {
 		prompt += `- User prefers to be called "${nickname}".\n`;
@@ -25,18 +20,19 @@ function createSystemPrompt(
 		prompt += `- User is an "${occupation}".\n`;
 	}
 
-	if (traits && traits.length > 0) {
-		prompt += `- User wants you to exhibit the following traits: ${traits.join(', ')}.\n`;
+  if (traits && traits.length > 0) {
+    prompt += `- User wants you to exhibit the following traits: ${traits.join(", ")}.\n`;
     noTraits = false;
-	}
+  }
 
 	if (additionalInfo) {
 		prompt += `- Additional information: ${additionalInfo}.\n`;
 	}
-
-	if (!nickname && !occupation && !additionalInfo && noTraits) {
-		prompt += 'There are no specific preferences provided.\n';
-	}
+  
+  if (noTraits && !nickname && !occupation &&
+    !additionalInfo) {
+    prompt += "There are no specific preferences provided.\n";
+  }
 
 	prompt += 'Please assist the user accordingly.';
 
