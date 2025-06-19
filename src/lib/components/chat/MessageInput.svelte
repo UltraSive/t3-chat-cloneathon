@@ -20,19 +20,43 @@
 
 	import { Button } from '$lib/components/ui/button';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Toggle } from '$lib/components/ui/toggle';
+	// Make sure AlertDialog and Alert are imported correctly
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import * as Alert from '$lib/components/ui/alert';
 
-	import { Send, Paperclip, Search, SearchCheck, CircleAlertIcon, ExternalLink } from 'lucide-svelte';
+	import {
+		Send,
+		Paperclip,
+		Search,
+		SearchCheck,
+		CircleAlertIcon,
+		ExternalLink
+	} from 'lucide-svelte';
 
 	let text = $state('');
 	let selectedModel = $derived(models.find((m) => m.id === model));
-	let search = $state(false);
+	let search = $state(false); // This holds the actual search state
 	let submitting = $state(false);
+	function disableSearch() {
+		search = false;
+		toast.info('Search functionality disabled.');
+	}
+
+	function confirmEnableSearch() {
+		search = true;
+		toast.info('Search functionality enabled!');
+	}
 
 	async function submitPrompt(
 		event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }
 	) {
+		// Prevent empty messages from being sent
+if (!text.trim()) {
+    toast.warning('Please enter a message.');
+    submitting = false;
+    return;
+}
+
 		submitting = true;
 
 		const data = new FormData(event.currentTarget);
@@ -86,7 +110,7 @@
 	);
 </script>
 
-<form method="POST" class="mx-auto flex max-w-3xl flex-col" onsubmit={preventDefault(submitPrompt)}>
+<div class="mx-auto flex max-w-3xl flex-col h-full">
 	<div class="relative">
 		<div class="mb-2 flex justify-center">
 			{#if countQuery.isLoading}{:else if countQuery.error}{:else}
@@ -102,7 +126,9 @@
 							><span
 								>You have {messagesLeft} messages left.
 								{#if !user.stripeSubscriptionId}
-									<a href="/upgrade" class="underline flex items-center"> Upgrade <ExternalLink class="ml-1 w-3 h-3"/></a> to unlock more.
+									<a href="/upgrade" class="flex items-center underline">
+										Upgrade <ExternalLink class="ml-1 h-3 w-3" /></a
+									> to unlock more.
 								{:else}{/if}</span
 							>
 						</Alert.Description>
@@ -111,32 +137,53 @@
 			{/if}
 		</div>
 		<div class="mb-2 flex justify-end">
-			<ModelSelect {models} bind:selected={model} />
+			<div class="flex items-center space-x-2">
+				{#if search == true}
+					<Button type="button" size="icon" variant="ghost" onclick={disableSearch}>
+						<SearchCheck class="text-primary h-4 w-4" />
+					</Button>
+				{:else}
+					<AlertDialog.Root>
+						<AlertDialog.Trigger asChild>
+							<Button type="button" size="icon" variant="ghost">
+								<Search class="h-4 w-4" />
+							</Button>
+						</AlertDialog.Trigger>
+						<AlertDialog.Content class="bg-background/90 backdrop-blur-lg">
+							<AlertDialog.Header>
+								<AlertDialog.Title>Enable Search Functionality?</AlertDialog.Title>
+								<AlertDialog.Description>
+									Enabling search allows the AI to perform web searches to answer your prompts.
+									This might use additional resources or message credits. Do you want to proceed?
+								</AlertDialog.Description>
+							</AlertDialog.Header>
+							<AlertDialog.Footer>
+								<AlertDialog.Cancel class="cursor-pointer">Cancel</AlertDialog.Cancel>
+								<Button
+									type="button"
+									variant="primary"
+									onclick={confirmEnableSearch}
+									class="bg-primary ml-2"
+								>
+									Enable Search
+								</Button>
+							</AlertDialog.Footer>
+						</AlertDialog.Content>
+					</AlertDialog.Root>
+				{/if}
+				<ModelSelect {models} bind:selected={model} />
+			</div>
 		</div>
-		<div class="bg-background/70 backdrop-blur-md">
+		<form method="POST" class="relative" onsubmit={preventDefault(submitPrompt)}>
 			<Textarea
 				id="message"
 				name="message"
 				placeholder="Message assistant..."
-				class="max-h-72 min-h-36 resize-none pr-12 pb-12"
+				class="bg-background/70 max-h-72 min-h-36 resize-none pr-12"
 				bind:value={text}
 				disabled={submitting || processing || !model}
 				onkeydown={handleKeyDown}
 			/>
-			<div class="absolute bottom-2 left-2">
-				<div class="flex items-center space-x-1">
-					<!--
-					<Button size="icon" variant="ghost">
-						<Paperclip class="h-4 w-4" />
-					</Button>
-					-->
-					<Toggle bind:pressed={search}
-						>{#if search}<SearchCheck class="h-4 w-4" />{:else}<Search
-								class="h-4 w-4"
-							/>{/if}</Toggle
-					>
-				</div>
-			</div>
 			<Button
 				type="submit"
 				size="icon"
@@ -145,6 +192,6 @@
 			>
 				<Send class="h-4 w-4" />
 			</Button>
-		</div>
+		</form>
 	</div>
-</form>
+</div>
