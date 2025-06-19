@@ -91,7 +91,7 @@
 	//let messages = $derived(query?.data?.messages);
 </script>
 
-<div class="flex h-full flex-1 flex-col">
+<div class="flex h-full flex-1 flex-col thread-container">
 	<ScrollArea bind:ref={scrollArea} class="flex-1 p-4">
 		<div class="mx-auto max-w-3xl">
 			{#if query.isLoading}
@@ -226,3 +226,11 @@
 		<MessageInput {user} bind:model {models} thread={page.params.thread} bind:processing />
 	</div>
 </div>
+
+<style>
+	.thread-container {
+		min-height: calc(100vh - 4rem);
+		display: flex;
+		flex-direction: column;
+	}
+</style>
