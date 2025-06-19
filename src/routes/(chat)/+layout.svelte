@@ -63,7 +63,7 @@
 				</Button>
 			</div>
 		</div>
-		<div class="container ">
+		<div class="container">
 			{@render children?.()}
 		</div>
 	</main>

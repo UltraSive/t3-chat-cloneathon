@@ -9,7 +9,6 @@
 	let { data }: PageProps = $props();
 	const { user, models } = data;
 
-
 	let model = $state(models[0].id);
 </script>
 
@@ -30,7 +29,7 @@
 		</div>
 	</div>
 	{#if user}
-		<div class="bg-background/70 sticky bottom-2 mx-4 backdrop-blur-md">
+		<div class="sticky bottom-2 mx-4">
 			<MessageInput {user} bind:model {models} />
 		</div>
 	{/if}

@@ -105,7 +105,7 @@
 
 <Dialog bind:open>
 	<DialogContent
-		class="bg-background/90 flex h-[600px] max-w-2xl flex-col overflow-hidden p-0 backdrop-blur-md"
+		class="bg-background/90 flex h-[600px] max-w-2xl flex-col overflow-hidden p-0 backdrop-blur-lg"
 	>
 		<div class="flex-shrink-0 border-b p-4">
 			<DialogHeader>
